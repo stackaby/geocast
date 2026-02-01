@@ -6,7 +6,7 @@
     "vite": "^7.3.1"
   },
   "scripts": {
-    "dev": "vite dist/",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   }

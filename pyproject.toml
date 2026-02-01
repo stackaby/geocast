@@ -1,0 +1,16 @@
+[project]
+name = "geocast"
+version = "0.1.0"
+description = "Cast geometry data from your local DCC to the web"
+authors = [
+    {name = "stackaby",email = "imaginary.unmolded792@sombra.mailer.me"}
+]
+readme = "README.md"
+requires-python = "==3.11.11"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

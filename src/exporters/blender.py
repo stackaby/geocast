@@ -55,4 +55,6 @@ def export_selection():
 
 
 if __name__ == "__main__":
+    # Select Suzanne
+    bpy.data.objects.get("Suzanne").select_set(True)
     export_selection()
