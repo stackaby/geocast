@@ -11,6 +11,7 @@ data:
 
 # make dev will just run the dev code without the vite build step
 dev: ./data.json
+	node assets/scripts/server.js &
 	npm run dev
 
 build:
