@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 
 const wss = new WebSocketServer({ port: 8080 });
+let count = 0;
 
 wss.on('connection', function connection(ws) {
    ws.on('error', console.error);
@@ -38,7 +39,8 @@ wss.on('connection', function connection(ws) {
       console.log(positions_array, positions_array.length);
       console.log(normals_array, normals_array.length);
       console.log(uvs_array, uvs_array.length);
-      //console.log('received: %s', data);
+      console.log('Count: %d', count);
+      count++;
    });
 
    ws.send('something');
