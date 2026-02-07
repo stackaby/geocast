@@ -62,7 +62,14 @@ def export_selection(objs: list) -> bytearray:
 
             mesh = Mesh(obj.name)
 
-            data.extend(struct.pack(f"<{len(obj.name)}s", obj.name.encode("utf-8")))
+            # Make sure that I pad the string to a multiple of 4
+            name_len = len(obj.name)
+            padding = (4 - name_len % 4) % 4
+
+            name_array = bytearray(obj.name, "utf-8")
+            name_array.extend(b'\00' * padding)
+
+            data.extend(struct.pack(f"<{name_len + padding}s", name_array))
             offset = len(obj.name)
 
 
@@ -107,7 +114,7 @@ def export_selection(objs: list) -> bytearray:
             data.extend(normals_arr.tobytes())
             data.extend(uvs_arr.tobytes())
 
-            header = header_struct.pack(len(obj.name), len_vertices, len_normals, len_uvs)
+            header = header_struct.pack(len(obj.name) + padding, len_vertices, len_normals, len_uvs)
             
             bm.free()
 
@@ -131,7 +138,7 @@ if __name__ == "__main__":
     import asyncio
    
     async def geometry_update(blob: bytearray):
-        async with connect("ws://localhost:8080") as websocket:
+        async with connect("ws://localhost:8080", additional_headers={"type":"auth","role":"producer"}) as websocket:
             await websocket.send(blob)
 
             message_return = await websocket.recv()
