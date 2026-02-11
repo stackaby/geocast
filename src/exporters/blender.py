@@ -164,6 +164,8 @@ def serialize_object():
 
         # Now perform the numpy reordering
         final_vertices = vertex_arr[vertex_order_arr]
+
+        # TODO: Multiply the verts by a transformation matrix
         
         # Get the normals
         normals_arr = numpy.zeros(num_tris * 9, dtype=numpy.float32)

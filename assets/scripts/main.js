@@ -5,16 +5,6 @@ const wsURI = "ws://localhost:8080?type=auth&role=consumer";
 const websocket = new WebSocket(wsURI);
 websocket.binaryType = "arraybuffer";
 
-websocket.addEventListener("open", () => {
-   const authMessage = {
-      type: "auth",
-      role: "consumer"
-   };
-
-   websocket.send(JSON.stringify(authMessage));
-});
-
-
 let geoBuffers = undefined;
 websocket.addEventListener("message", (e) => {
    if (e.data instanceof ArrayBuffer === false) {
@@ -63,9 +53,14 @@ websocket.addEventListener("message", (e) => {
 
 
 
-const scene = new THREE.Scene()
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer();
+camera.position.set(8, 5, 8);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -96,8 +91,14 @@ if (geoBuffers) {
 const geo = new THREE.Mesh(buffer_geo, buffer_mat);
 const wire_geo = new THREE.Mesh(buffer_geo, buffer_wire_mat)
 
+// Build a gridline
+const gridHelper = new THREE.GridHelper(10, 10, new THREE.Color(0x000000), new THREE.Color(0x000000));
+
+
+
 scene.add(geo);
-scene.add(wire_geo)
+scene.add(wire_geo);
+scene.add(gridHelper);
 
 camera.position.z = 5;
 function animate() {
@@ -118,11 +119,6 @@ function animate() {
          new THREE.BufferAttribute(geoBuffers.uvs, uvNumComponents)
       );
    }
-
-   geo.rotation.x += 0.01;
-   geo.rotation.y += 0.01;
-   wire_geo.rotation.x += 0.01;
-   wire_geo.rotation.y += 0.01;
 }
 
 renderer.setAnimationLoop(animate);

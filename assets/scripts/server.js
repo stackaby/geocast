@@ -53,6 +53,5 @@ wss.on('connection', function connection(ws, request) {
       if (is_producer) {
          clients.set("producer", undefined);
       }
-
    });
 });
