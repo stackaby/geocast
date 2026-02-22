@@ -107,7 +107,7 @@ From AGENTS.md:
 ### Tasks
 
 - [ ] Address TODOs in code
-  - `blender.py:168` - Transformation matrix multiplication
+  - `blender.py:168` - Transformation matrix multiplication (for world-space coordinates)
 
 - [x] Remove unused code
   - [x] `src/schema.py` - deleted (was not imported anywhere)
@@ -126,13 +126,13 @@ From AGENTS.md:
   - [x] Reorganized imports (removed unused)
   - [x] Formatted with 3-space indentation (ruff)
   - [x] Removed empty function
-  - [ ] Remove redundant `bytearray()` wrapper (lines 135, 196)
+  - [x] Removed redundant `bytearray()` wrapper (lines 135, 196) — now using `b"".join()` directly
+  - [ ] Address global mutable state (`MESH_OBJECTS` at module level) - optional refactor
 
 - [ ] Standardize binary payload construction
   - `serialize_edit_mesh()` uses ctypes arrays
   - `serialize_object()` uses numpy arrays with `.flatten()`
-  - Pick one approach for consistency (recommend numpy)
-  - [ ] Remove redundant `bytearray()` wrapper (lines 135, 196) — `b''.join()` already returns bytes
+  - [ ] Pick one approach for consistency (recommend numpy)
   - Consider pre-allocating buffer for large meshes (optional optimization)
 
 - [x] JavaScript cleanup (main.js)
