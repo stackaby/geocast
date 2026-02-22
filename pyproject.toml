@@ -24,3 +24,43 @@ dev = [
     "ruff (>=0.15.0,<0.16.0)",
     "pylint (>=4.0.4,<5.0.0)"
 ]
+
+[tool.ruff]
+line-length = 120
+indent-width = 3
+fix = true
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+
+[tool.pylint.format]
+indent-after-paren = 3
+indent-string = "   "
+
+[tool.mypy]
+python_version = "3.11"
+follow_imports = "silent"
+
+[[tool.mypy.overrides]]
+module = ["bpy.*", "bmesh"]
+follow_imports = "skip"
+ignore_missing_imports = true

@@ -108,61 +108,56 @@ From AGENTS.md:
 
 - [ ] Address TODOs in code
   - `blender.py:168` - Transformation matrix multiplication
-  - `blender.py:19-26` - Color generation (remove or implement properly)
 
-- [ ] Remove unused code
-  - `src/schema.py` appears unused - verify and remove if not needed
-  - `clear_invalid_objects()` is empty - implement or remove
+- [x] Remove unused code
+  - [x] `src/schema.py` - deleted (was not imported anywhere)
+  - [x] Removed unused imports in blender.py (`struct`, `Struct`, `array`, `Sequence`)
+  - [x] Removed empty `clear_invalid_objects()` function
 
-- [ ] Clean upempty directories
-  - `src/engine/` is empty - remove or add placeholder
+- [x] Clean up empty directories
+  - [ ] `src/engine/` is empty - remove or add placeholder
 
 - [ ] Add documentation
-  - README with setup/usage instructions
-  - Inline comments for binary format parsing
-  - Docstrings on key functions
+  - [ ] README with setup/usage instructions
+  - [ ] Inline comments for binary format parsing
+  - [ ] Docstrings on key functions
 
-- [ ] Code organization (blender.py)
-  - Reorganize into clear sections:
-    1. Imports (clean up unused: `struct`, `Struct`, `array`, `Sequence`)
-    2. Constants & Types
-    3. Binary Format (GeometryBufferHeader, payload building)
-    4. Mesh Extraction (get_mesh_stats, vertex/normal/uv extraction)
-    5. Object Management (selection, validation)
-    6. Networking (WebSocket client)
-    7. Entry Point (timer registration)
-  - Address global mutable state (`MESH_OBJECTS` at module level)
-  - If file grows, consider splitting into modules:
-    ```
-    src/exporters/blender/
-    ├── __init__.py      # Entry point, timer
-    ├── selection.py     # Object management
-    ├── extract.py       # Mesh data extraction
-    ├── serialize.py     # Binary format
-    └── network.py       # WebSocket client
-    ```
-  - Ensure consistent code style
+- [x] Code organization (blender.py)
+  - [x] Reorganized imports (removed unused)
+  - [x] Formatted with 3-space indentation (ruff)
+  - [x] Removed empty function
+  - [ ] Remove redundant `bytearray()` wrapper (lines 135, 196)
 
 - [ ] Standardize binary payload construction
   - `serialize_edit_mesh()` uses ctypes arrays
   - `serialize_object()` uses numpy arrays with `.flatten()`
   - Pick one approach for consistency (recommend numpy)
-  - Remove redundant `bytearray()` wrapper — `b''.join()` returns bytes
+  - [ ] Remove redundant `bytearray()` wrapper (lines 135, 196) — `b''.join()` already returns bytes
   - Consider pre-allocating buffer for large meshes (optional optimization)
 
-- [ ] JavaScript cleanup (main.js)
-  - Remove dead code (lines 75-89 — `geoBuffers` is undefined when this runs)
-  - Fix duplicated buffer attribute setting code
-  - Optimize updates: modify existing buffer instead of creating new `BufferAttribute` each frame
-  - Extract magic numbers to constants (`BYTES_PER_FLOAT = 4`)
-  - Add error handling for WebSocket and parsing
-  - Consider extracting parsing logic into separate function
+- [x] JavaScript cleanup (main.js)
+  - [x] Removed dead code block (old lines 75-89)
+  - [x] Fixed duplicated buffer attribute setting code
+  - [x] Optimized updates: pre-allocated BufferAttributes, update in place with `needsUpdate`
+  - [x] Extracted magic number to `BYTES_PER_FLOAT = 4` constant
+  - [ ] Clean up unused constants (`positionNumComponents`, `normalNumComponents`, `uvNumComponents`)
+  - [ ] Remove redundant camera position overwrite (line 105 sets z=5, overwriting line 13's z=8)
+  - [ ] Remove unnecessary `geoBuffers` variable (set attributes directly)
+  - [ ] Add overflow check for large meshes:
+    ```javascript
+    if (header.positions_len > MAX_VERTICES * 3) {
+       console.warn("Mesh exceeds MAX_VERTICES");
+       return;
+    }
+    ```
+  - [ ] Consider dynamic buffer sizing (resize when needed instead of fixed MAX_VERTICES)
+  - [ ] Add error handling for WebSocket and parsing
 
 - [ ] JavaScript cleanup (server.js)
-  - Fix consumer cleanup on disconnect (remove from consumers array)
-  - Fix confusing assignment in conditional (line 44: `if (consumers = ...)`)
-  - Add message validation before broadcasting
-  - Prevent memory leak from disconnected clients
+  - [ ] Fix consumer cleanup on disconnect (remove from consumers array)
+  - [ ] Fix confusing assignment in conditional (line 44: `if (consumers = ...)`)
+  - [ ] Add message validation before broadcasting
+  - [ ] Prevent memory leak from disconnected clients
 
 - [ ] TypeScript readiness
   - Define interfaces for data structures (future TypeScript conversion):
