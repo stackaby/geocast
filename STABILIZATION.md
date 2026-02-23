@@ -139,10 +139,14 @@ From AGENTS.md:
   - [x] Removed dead code block (old lines 75-89)
   - [x] Fixed duplicated buffer attribute setting code
   - [x] Optimized updates: pre-allocated BufferAttributes, update in place with `needsUpdate`
-  - [x] Extracted magic number to `BYTES_PER_FLOAT = 4` constant
-  - [ ] Clean up unused constants (`positionNumComponents`, `normalNumComponents`, `uvNumComponents`)
-  - [ ] Remove redundant camera position overwrite (line 105 sets z=5, overwriting line 13's z=8)
-  - [ ] Remove unnecessary `geoBuffers` variable (set attributes directly)
+  - [x] Extracted magic numbers to constants (BYTES_PER_FLOAT, HEADER_LEN, colors, camera settings)
+  - [x] Cleaned up unused constants (removed positionNumComponents, etc.)
+  - [x] Removed redundant camera position overwrite
+  - [x] Removed unnecessary `geoBuffers` variable
+  - [x] Extracted parsing logic into `parseGeoData()` function
+  - [x] Extracted header parsing into `parseHeader()` function
+  - [x] Extracted update logic into `updateGeometry()` function with destructuring
+  - [x] Converted header object to camelCase (nameLen, positionsLen, etc.)
   - [ ] Add overflow check for large meshes:
     ```javascript
     if (header.positions_len > MAX_VERTICES * 3) {

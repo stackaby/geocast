@@ -1,108 +1,126 @@
 import * as THREE from 'three';
 
-
 const MAX_VERTICES = 100000;
-const positionAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * 3), 3);
-const normalAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * 3), 3);
-const uvAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * 2), 2);
+const POS_NUM_COMPONENTS = 3;
+const NORM_NUM_COMPONENTS = 3;
+const UV_NUM_COMPONENTS = 2;
+
+const BLACK = 0x000000;
+const WHITE = 0xffffff;
+const BLUE = 0x0000ff;
+const GREEN = 0x00ff00;
+
+const FOV = 75;
+const NEAR = 0.1;
+const FAR = 1000;
+
+const BYTES_PER_FLOAT = 4;
+const HEADER_LEN = 16;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xffffff);
+scene.background = new THREE.Color(WHITE);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(FOV, window.innerWidth / window.innerHeight, NEAR, FAR);
 camera.position.set(8, 5, 8);
-camera.lookAt(0, 0, 0);
+camera.lookAt(0, 0, 0);  // Look at the center origin
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const buffer_geo = new THREE.BufferGeometry()
-buffer_geo.setAttribute("position", positionAttr);
-buffer_geo.setAttribute("normal", normalAttr);
-buffer_geo.setAttribute("uv", uvAttr);
+const bufferGeo = new THREE.BufferGeometry()
 
-const buffer_mat = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-const buffer_wire_mat = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+const positionAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * POS_NUM_COMPONENTS), POS_NUM_COMPONENTS);
+const normalAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * NORM_NUM_COMPONENTS), NORM_NUM_COMPONENTS);
+const uvAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * UV_NUM_COMPONENTS), UV_NUM_COMPONENTS);
 
-const positionNumComponents = 3;
-const normalNumComponents = 3;
-const uvNumComponents = 2;
+bufferGeo.setAttribute("position", positionAttr);
+bufferGeo.setAttribute("normal", normalAttr);
+bufferGeo.setAttribute("uv", uvAttr);
 
-const geo = new THREE.Mesh(buffer_geo, buffer_mat);
-const wire_geo = new THREE.Mesh(buffer_geo, buffer_wire_mat)
+const bufferMat = new THREE.MeshBasicMaterial({ color: BLUE });
+const bufferWireMat = new THREE.MeshBasicMaterial({ color: GREEN, wireframe: true });
+
+const geo = new THREE.Mesh(bufferGeo, bufferMat);
+const wireGeo = new THREE.Mesh(bufferGeo, bufferWireMat)
 
 // Build a gridline
-const gridHelper = new THREE.GridHelper(10, 10, new THREE.Color(0x000000), new THREE.Color(0x000000));
+const gridHelper = new THREE.GridHelper(10, 10, new THREE.Color(BLACK), new THREE.Color(BLACK));
 
 scene.add(geo);
-scene.add(wire_geo);
+scene.add(wireGeo);
 scene.add(gridHelper);
 
 
-const wsURI = "ws://localhost:8080?type=auth&role=consumer";
-const websocket = new WebSocket(wsURI);
-websocket.binaryType = "arraybuffer";
+function parseGeoData(buffer) {
+   const view = new DataView(buffer);
 
-let geoBuffers = undefined;
-websocket.addEventListener("message", (e) => {
-   if (e.data instanceof ArrayBuffer === false) {
-      console.log(`Skip ${e.data}`);
-      return;
-   }
+   const header = parseHeader(view);
 
-   const fullBuffer = e.data;
-   const view = new DataView(fullBuffer);
+   // Get the name
+   const nameStart = HEADER_LEN;
+   const nameEnd = nameStart + header.nameLen;
 
-   const header = {
-      name_len: view.getInt32(0, true),
-      positions_len: view.getInt32(4, true),
-      normals_len: view.getInt32(8, true),
-      uvs_len: view.getInt32(12, true)
-   }
-
-   let headerLen = 16;
-   let nameStart = headerLen;
-   let nameEnd = nameStart + header.name_len;
-
-   // Print the name
-   const nameBytes = fullBuffer.slice(nameStart, nameEnd);
+   const nameBytes = buffer.slice(nameStart, nameEnd);
 
    const decoder = new TextDecoder()
    const name = decoder.decode(nameBytes);
+   console.debug(name);
 
-   const BYTES_PER_FLOAT = 4;
    const positionsStart = nameEnd;
-   const positionsEnd = positionsStart + header.positions_len * BYTES_PER_FLOAT;
-   const positions_array = new Float32Array(fullBuffer, positionsStart, header.positions_len);
+   const positionsEnd = positionsStart + header.positionsLen * BYTES_PER_FLOAT;
+   const positions = new Float32Array(buffer, positionsStart, header.positionsLen);
 
    const normalsStart = positionsEnd;
-   const normalsEnd = normalsStart + header.normals_len * BYTES_PER_FLOAT;
-   const normals_array = new Float32Array(fullBuffer, normalsStart, header.normals_len);
+   const normalsEnd = normalsStart + header.normalsLen * BYTES_PER_FLOAT;
+   const normals = new Float32Array(buffer, normalsStart, header.normalsLen);
 
    const uvsStart = normalsEnd;
-   const uvs_array = new Float32Array(fullBuffer, uvsStart, header.uvs_len);
+   const uvs = new Float32Array(buffer, uvsStart, header.uvsLen);
 
 
-   geoBuffers = {
-      positions: positions_array,
-      normals: normals_array,
-      uvs: uvs_array
-   };
+   return { positions, normals, uvs };
+}
 
-   positionAttr.array.set(geoBuffers.positions);
+function parseHeader(view) {
+   return {
+      nameLen: view.getInt32(0, true),
+      positionsLen: view.getInt32(4, true),
+      normalsLen: view.getInt32(8, true),
+      uvsLen: view.getInt32(12, true)
+   }
+
+}
+
+function updateGeometry({ positions, normals, uvs }) {
+   positionAttr.array.set(positions);
    positionAttr.needsUpdate = true;
-   positionAttr.updateRange = { offset: 0, count: geoBuffers.positions.length };
+   positionAttr.updateRange = { offset: 0, count: positions.length };
 
-   normalAttr.array.set(geoBuffers.normals);
+   normalAttr.array.set(normals);
    normalAttr.needsUpdate = true;
 
-   uvAttr.array.set(geoBuffers.uvs);
+   uvAttr.array.set(uvs);
    uvAttr.needsUpdate = true;
+}
+
+
+// Set up the consumer client
+const WS_URI = "ws://localhost:8080?type=auth&role=consumer";
+const websocket = new WebSocket(WS_URI);
+websocket.binaryType = "arraybuffer";  // Expecting an array buffer from the server
+
+websocket.addEventListener("message", (e) => {
+   // Skip the data if we receive anything other than an array buffer
+   if (e.data instanceof ArrayBuffer === false) {
+      console.debug(`Skip ${e.data}`);
+      return;
+   }
+
+   updateGeometry(parseGeoData(e.data));
 });
 
 
-camera.position.z = 5;
 function animate() {
    renderer.render(scene, camera);
 }
