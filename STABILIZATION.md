@@ -115,7 +115,7 @@ From AGENTS.md:
   - [x] Removed empty `clear_invalid_objects()` function
 
 - [x] Clean up empty directories
-  - [ ] `src/engine/` is empty - remove or add placeholder
+  - [x] `src/engine/` removed
 
 - [ ] Add documentation
   - [ ] README with setup/usage instructions
@@ -157,11 +157,14 @@ From AGENTS.md:
   - [ ] Consider dynamic buffer sizing (resize when needed instead of fixed MAX_VERTICES)
   - [ ] Add error handling for WebSocket and parsing
 
-- [ ] JavaScript cleanup (server.js)
-  - [ ] Fix consumer cleanup on disconnect (remove from consumers array)
-  - [ ] Fix confusing assignment in conditional (line 44: `if (consumers = ...)`)
-  - [ ] Add message validation before broadcasting
-  - [ ] Prevent memory leak from disconnected clients
+- [x] JavaScript cleanup (server.js)
+  - [x] Fix consumer cleanup on disconnect (remove from consumers array)
+  - [x] Fix confusing assignment in conditional
+  - [x] Extract constants to top (PORT, PRODUCER_TYPE, etc.)
+  - [x] Extract getClientType() function
+  - [x] Use switch statements for client type handling
+  - [ ] Add message validation before broadcasting (optional)
+  - [ ] Prevent memory leak from disconnected clients (partially done)
 
 - [ ] TypeScript readiness
   - Define interfaces for data structures (future TypeScript conversion):

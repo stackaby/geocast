@@ -1,57 +1,79 @@
 import { WebSocketServer } from 'ws';
 import url from 'url';
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = 8080;
+const PRODUCER_TYPE = "PRODUCER";
+const CONSUMER_TYPE = "CONSUMER";
+const PRODUCER_MAP_KEY = "producer";
+const CONSUMERS_MAP_KEY = "consumers";
+
+const wss = new WebSocketServer({ port: PORT });
 
 let clients = new Map();
 
 wss.on('connection', function connection(ws, request) {
 
-   let is_producer = request.headers?.type === "auth" && request.headers?.role === "producer";
-   let is_consumer = request.headers?.type === "auth" && request.headers?.role === "consumer";
+   const clientType = getClientType(request);
 
-   if (!is_consumer) {
-      // Check query parameters
-      const query = url.parse(request.url, true).query;
-      is_consumer = query.role === "consumer";
-   }
+   switch (clientType) {
+      case PRODUCER_TYPE:
+         if (clients.get(PRODUCER_MAP_KEY) !== undefined) {
+            ws.send("Error: Producer already registered");
+            ws.close();
+         }
 
-   if (is_producer) {
+         clients.set(PRODUCER_MAP_KEY, ws);
+         break;
 
-      if (clients.get("producer")) {
-         ws.send("Error: Producer already registered");
+      case CONSUMER_TYPE:
+         // There can be many consumers
+         const consumers = clients.get(CONSUMERS_MAP_KEY);
+         if (!consumers) {
+            clients.set(CONSUMERS_MAP_KEY, [ws]);
+         }
+         else {
+            consumers.push(ws);
+         }
+         break;
+
+      default:
+         ws.send("Unknown client role specified.");
          ws.close();
-      }
-
-      clients.set("producer", ws);
-   }
-
-   if (is_consumer) {
-      // There can be many consumers
-      const consumers = clients.get("consumers");
-      if (!consumers) {
-         clients.set("consumers", [ws]);
-      }
-      else {
-         consumers.push(ws);
-      }
    }
 
    ws.on('error', console.error);
 
    ws.on('message', function message(data) {
-      let consumers;
-      if (consumers = (clients.get("consumers"))) {
+      const consumers = clients.get(CONSUMERS_MAP_KEY);
+      if (consumers) {
+         // Send data to all the consumers
          for (let consumer of consumers) {
-            // Send data to all the consumers
             consumer.send(data.buffer);
          }
       }
    });
 
    ws.on('close', function close() {
-      if (is_producer) {
-         clients.set("producer", undefined);
+
+      switch (clientType) {
+         case PRODUCER_TYPE:
+            clients.set(PRODUCER_MAP_KEY, undefined);
+            break;
+
+         case CONSUMER_TYPE:
+            let consumers = clients.get(CONSUMERS_MAP_KEY);
+            const index = consumers.indexOf(ws);
+            consumers.splice(index, 1);
+            break;
       }
    });
 });
+
+
+function getClientType(request) {
+
+   const role = request.headers?.role || url.parse(request.url, true).query?.role;
+   if (role === "producer") return PRODUCER_TYPE;
+   if (role === "consumer") return CONSUMER_TYPE;
+   return undefined;
+}
