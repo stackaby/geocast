@@ -16,10 +16,14 @@ ID_t = bpy.types.ID
 Object_t = bpy.types.Object
 Mesh_t = bpy.types.Mesh
 
+BLENDER_HANDEDNESS = ord("R")
+BLENDER_UP_AXIS = ord("Z")
+
 
 class GeometryBufferHeader(ctypes.LittleEndianStructure):
    _fields_ = [
       ("name_len", ctypes.c_uint32),
+      ("metadata", ctypes.c_uint32),  # handedness | up_axis | - | -
       ("vert_pos_len", ctypes.c_uint32),
       ("norm_len", ctypes.c_uint32),
       ("uv_len", ctypes.c_uint32),
@@ -120,9 +124,12 @@ def serialize_edit_mesh():
       name_bytes = mesh.name.encode("utf-8").ljust(32, b"\00")
 
       header.name_len = 32
+      header.metadata = (BLENDER_HANDEDNESS << 24) | (BLENDER_UP_AXIS << 16)
       header.vert_pos_len = len(vertices_arr)
       header.norm_len = len(normals_arr)
       header.uv_len = len(uvs_arr)
+      header.handedness = BLENDER_HANDEDNESS
+      header.up_axis = BLENDER_UP_AXIS
 
       payload_parts = [
          bytes(header),
@@ -181,6 +188,7 @@ def serialize_object():
       name_bytes = mesh_eval.name.encode("utf-8").ljust(32, b"\00")
 
       header.name_len = 32
+      header.metadata = (BLENDER_HANDEDNESS << 24) | (BLENDER_UP_AXIS << 16)
       header.vert_pos_len = len(final_vertices.flatten())
       header.norm_len = len(normals_arr.flatten())
       header.uv_len = len(uvs_arr.flatten())

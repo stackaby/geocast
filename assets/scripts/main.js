@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const MAX_VERTICES = 100000;
 const POS_NUM_COMPONENTS = 3;
@@ -15,7 +16,7 @@ const NEAR = 0.1;
 const FAR = 1000;
 
 const BYTES_PER_FLOAT = 4;
-const HEADER_LEN = 16;
+const HEADER_LEN = 20;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(WHITE);
@@ -27,6 +28,9 @@ camera.lookAt(0, 0, 0);  // Look at the center origin
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.update();
 
 const bufferGeo = new THREE.BufferGeometry()
 
@@ -57,6 +61,9 @@ function parseGeoData(buffer) {
 
    const header = parseHeader(view);
 
+   const handedness = String.fromCharCode(header.metadata >> 24 & 0xFF);
+   const upAxis = String.fromCharCode(header.metadata >> 16 & 0xFF);
+
    // Get the name
    const nameStart = HEADER_LEN;
    const nameEnd = nameStart + header.nameLen;
@@ -78,6 +85,12 @@ function parseGeoData(buffer) {
    const uvsStart = normalsEnd;
    const uvs = new Float32Array(buffer, uvsStart, header.uvsLen);
 
+   // Just test the up axis for now
+   if (upAxis === 'Z') {
+      // Rotate -90 in X
+
+   }
+
 
    return { positions, normals, uvs };
 }
@@ -85,9 +98,10 @@ function parseGeoData(buffer) {
 function parseHeader(view) {
    return {
       nameLen: view.getInt32(0, true),
-      positionsLen: view.getInt32(4, true),
-      normalsLen: view.getInt32(8, true),
-      uvsLen: view.getInt32(12, true)
+      metadata: view.getInt32(4, true),
+      positionsLen: view.getInt32(8, true),
+      normalsLen: view.getInt32(12, true),
+      uvsLen: view.getInt32(16, true),
    }
 
 }
@@ -122,6 +136,7 @@ websocket.addEventListener("message", (e) => {
 
 
 function animate() {
+   controls.update();
    renderer.render(scene, camera);
 }
 
