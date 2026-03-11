@@ -72,7 +72,6 @@ function parseGeoData(buffer) {
 
    const decoder = new TextDecoder()
    const name = decoder.decode(nameBytes);
-   console.debug(name);
 
    const positionsStart = nameEnd;
    const positionsEnd = positionsStart + header.positionsLen * BYTES_PER_FLOAT;
@@ -85,14 +84,16 @@ function parseGeoData(buffer) {
    const uvsStart = normalsEnd;
    const uvs = new Float32Array(buffer, uvsStart, header.uvsLen);
 
+   let rotation = new THREE.Matrix4().identity();
+   // three.js is Y up so do nothing
    // Just test the up axis for now
    if (upAxis === 'Z') {
       // Rotate -90 in X
-
+      rotation = rotation.makeRotationX(-Math.PI / 2);
    }
 
 
-   return { positions, normals, uvs };
+   return { positions, normals, uvs, rotation };
 }
 
 function parseHeader(view) {
@@ -106,7 +107,7 @@ function parseHeader(view) {
 
 }
 
-function updateGeometry({ positions, normals, uvs }) {
+function updateGeometry({ positions, normals, uvs, rotation }) {
    positionAttr.array.set(positions);
    positionAttr.needsUpdate = true;
    positionAttr.updateRange = { offset: 0, count: positions.length };
@@ -116,6 +117,10 @@ function updateGeometry({ positions, normals, uvs }) {
 
    uvAttr.array.set(uvs);
    uvAttr.needsUpdate = true;
+
+   // Apply the rotation to the buffer geo as a whole
+   geo.setRotationFromMatrix(rotation);
+   wireGeo.setRotationFromMatrix(rotation);
 }
 
 
