@@ -21,17 +21,21 @@ Streaming live geometry updates from Blender to a web browser via WebSockets for
 
 See STABILIZATION.md for detailed task tracking.
 
-- Phase 1: Add up-axis metadata to binary payload
-- Phase 2: Fix orientation bug (Z-up to Y-up conversion)
+- Phase 3: Error handling & robustness
+- Phase 4: Code cleanup (remaining documentation tasks)
+- Material palette system
 
 ### Completed
 
+- Phase 1: Add up-axis metadata to binary payload ✓
+- Phase 2: Fix orientation bug (Z-up to Y-up conversion) ✓
 - Phase 4: Code Cleanup
   - Removed unused code (schema.py, engine/, unused imports)
   - Optimized BufferAttribute updates (pre-allocate, update in place)
   - Refactored main.js (extracted functions, constants at top)
   - Refactored server.js (consumer cleanup, extracted functions)
   - Formatted blender.py with ruff (3-space indentation)
+- Orbit camera controls (OrbitControls)
 
 ## Design Decisions
 
@@ -57,12 +61,21 @@ See STABILIZATION.md for detailed task tracking.
 
 ```
 Payload:
-  [up_axis: uint8('X' | 'Y' | 'Z')]  -- Phase 1 addition
-  [header: 16 bytes]
+  [header: 20 bytes]
+    - name_len: uint32
+    - metadata: uint32 (handedness | up_axis | reserved | reserved)
+    - positions_len: uint32
+    - normals_len: uint32
+    - uvs_len: uint32
   [name: 32 bytes]
   [positions: float32 array]
   [normals: float32 array]
   [uvs: float32 array]
+
+Metadata encoding:
+  - Byte 3 (MSB): Handedness ('L' or 'R')
+  - Byte 2: Up-axis ('X', 'Y', or 'Z')
+  - Bytes 0-1: Reserved
 ```
 
 ### Code Style

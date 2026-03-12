@@ -64,6 +64,10 @@ Used for: Snapshots, dailies review, cloud storage, asset library, sharing with 
 - Delivery: Real-time streaming via WebSocket
 - Platform: Desktop browser
 - Collaboration: None
+- Features:
+  - ✓ Orbit camera controls (OrbitControls)
+  - ✓ Z-up to Y-up orientation handling
+  - ✓ Metadata in binary payload (handedness, up-axis)
 
 ---
 
@@ -273,7 +277,7 @@ Geometry Block:
 | Serialization | ctypes/NumPy | Low |
 | Network transfer | WebSocket | High (bandwidth) |
 | Browser parsing | DataView | Low |
-| Three.js update | New BufferAttribute each frame | **High** |
+| Three.js update | Pre-allocated BufferAttribute with `needsUpdate` | **Low** ✓ |
 
 ### Optimization Strategies
 
@@ -286,19 +290,14 @@ Geometry Block:
 | **Float16 quantization** | 50% bandwidth reduction | Medium |
 | **Delta compression** | Send only changed vertices (80-99% for animation) | High |
 
-#### BufferAttribute Fix (Quick Win)
+#### BufferAttribute Fix ✓
 
-Current (expensive):
-```javascript
-// Creates new object every frame
-buffer_geo.setAttribute("position", new THREE.BufferAttribute(geoBuffers.positions, 3));
-```
-
-Optimized (cheap):
+Implemented:
 ```javascript
 // Pre-allocate, update in place
-const positionAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTS * 3), 3);
-buffer_geo.setAttribute('position', positionAttr);
+const MAX_VERTICES = 100000;
+const positionAttr = new THREE.BufferAttribute(new Float32Array(MAX_VERTICES * 3), 3);
+bufferGeo.setAttribute('position', positionAttr);
 
 // On receive:
 positionAttr.array.set(incomingPositions);
@@ -412,7 +411,7 @@ indices: [ 0, 1, 2, 1, 3, 2, ... ]
 | Topic | Question | Status |
 |-------|----------|--------|
 | Connection states | Loading indicator, reconnection UI, offline mode? | Unaddressed |
-| Camera controls | Orbital controls mentioned — touch support for iPad? | Partial |
+| Camera controls | Orbital controls (OrbitControls) — touch support for iPad? | ✓ Implemented (touch support untested) |
 | Responsive layout | Phone vs. tablet vs. desktop viewing? | Unaddressed |
 | Feedback | How does user know streaming is working? FPS counter? | Unaddressed |
 

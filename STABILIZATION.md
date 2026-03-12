@@ -6,72 +6,81 @@ Stabilize the codebase before pushing forward with new features. Focus on fixing
 
 ---
 
-## Phase 1: Add Up-Axis Metadata
+## Phase 1: Add Up-Axis Metadata ✓
 
 **Goal:** Add minimal metadata needed for the orientation fix.
 
 ### Tasks
 
-- [ ] Add up-axis to binary payload
-  - Single byte: 'X', 'Y', or 'Z' (currently 'Z' for Blender)
-  - Minimal change to existing format
-  - Prepend before existing header
+- [x] Add metadata field to binary payload header
+  - Added `metadata` uint32 field to GeometryBufferHeader
+  - Encodes handedness ('R'/'L') and up-axis ('X'/'Y'/'Z') in byte 3 and 2
+  - Blender sends 'R' (right-handed) and 'Z' (Z-up)
 
 - [ ] Document the binary format
   - Create `docs/format.md` with current specification
   - Note: versioning deferred until needed (see "When to Add Versioning")
 
-### Updated Binary Format
+### Implemented Binary Format
 
 ```
 Payload:
-  [up_axis: uint8('X' | 'Y' | 'Z')]
-  [header: 16 bytes - existing]
-  [name: 32 bytes - existing]
-  [positions: float32 array - existing]
-  [normals: float32 array - existing]
-  [uvs: float32 array - existing]
+  [header: 20 bytes]
+    - name_len: uint32
+    - metadata: uint32 (handedness | up_axis | reserved | reserved)
+    - positions_len: uint32
+    - normals_len: uint32
+    - uvs_len: uint32
+  [name: 32 bytes]
+  [positions: float32 array]
+  [normals: float32 array]
+  [uvs: float32 array]
+
+Metadata encoding:
+  - Byte 3 (MSB): Handedness ('L' or 'R')
+  - Byte 2: Up-axis ('X', 'Y', or 'Z')
+  - Bytes 0-1: Reserved
 ```
 
-### When to Add Versioning
+### Cleanup Needed
 
-Skip versioning for now since no teams are using it yet. Add versioning when:
-
-1. Someone outside you starts relying on the protocol, OR
-2. You've shipped a version you don't want to break, OR
-3. The format stabilizes and you need backward compatibility
-
-This keeps the prototype flexible. Breaking changes are free until someone depends on it.
+- [ ] Remove orphaned code in `blender.py` lines 131-132 (header.handedness/up_axis don't exist)
 
 ---
 
-## Phase 2: Orientation Fix
+## Phase 2: Orientation Fix ✓
 
 **Goal:** Fix rotation using the up-axis metadata.
 
 ### Tasks
 
-- [ ] Producer side (blender.py)
-  - Prepend up-axis byte ('Z') to payload
-  - Send raw data (no transformation)
-  - Update GeometryBufferHeader offsets if needed
+- [x] Producer side (blender.py)
+  - Added metadata field with handedness and up-axis
+  - Sends raw data (no transformation)
+  - `BLENDER_HANDEDNESS = ord('R')`, `BLENDER_UP_AXIS = ord('Z')`
 
-- [ ] Consumer side (main.js)
-  - Parse up-axis byte at start of payload
-  - Apply rotation transformation based on value
-  - Z-up → Y-up: rotateX(-90°) or equivalent quaternion
+- [x] Consumer side (main.js)
+  - Parse metadata field from header
+  - Extract handedness and up-axis from bytes
+  - Apply rotation transformation: Z-up → Y-up via `rotation.makeRotationX(-Math.PI / 2)`
 
 - [ ] Test with multiple objects in Blender
   - Verify orientation is correct
   - Test with non-symmetric geometry
 
-- [ ] Update AGENTS.md with implemented solution
+- [x] Update AGENTS.md with implemented solution
 
 ### Reference
 
-From AGENTS.md:
-> Orientation: Send raw DCC data with up-axis metadata; consumer handles transformation
-> Coordinate system: Z-up (Blender) to Y-up (three.js) via mesh.rotation.x = -Math.PI / 2
+From main.js:
+```javascript
+const handedness = String.fromCharCode(header.metadata >> 24 & 0xFF);
+const upAxis = String.fromCharCode(header.metadata >> 16 & 0xFF);
+
+if (upAxis === 'Z') {
+   rotation = rotation.makeRotationX(-Math.PI / 2);
+}
+```
 
 ---
 
