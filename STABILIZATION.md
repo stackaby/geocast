@@ -17,8 +17,8 @@ Stabilize the codebase before pushing forward with new features. Focus on fixing
   - Encodes handedness ('R'/'L') and up-axis ('X'/'Y'/'Z') in byte 3 and 2
   - Blender sends 'R' (right-handed) and 'Z' (Z-up)
 
-- [ ] Document the binary format
-  - Create `docs/format.md` with current specification
+- [x] Document the binary format
+  - Created `docs/format.md` with current specification
   - Note: versioning deferred until needed (see "When to Add Versioning")
 
 ### Implemented Binary Format
@@ -211,8 +211,8 @@ These are tracked in AGENTS.md for later:
 
 After stabilization:
 
-1. Geometry streams correctly with proper orientation
-2. Binary format is documented with up-axis metadata
+1. Geometry streams correctly with proper orientation ✓
+2. Binary format is documented with up-axis metadata ✓
 3. Connection drops are handled gracefully
 4. Code is clean and documented for team use
 5. No silent failures or unhandled edge cases
