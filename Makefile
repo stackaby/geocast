@@ -6,8 +6,9 @@ all-prod: data build
 
 data:
 	@test -n "$(BLENDER_PATH)" || (echo "Error: BLENDER_PATH is not set. Please add it to your shell"; exit 1)
+	@test -n "$(VIRTUAL_ENV)" || echo "Warning: Not in a virtual environment. Run 'poetry shell' first for dependencies."
 	@echo "Using Blender at: $(BLENDER_PATH)"
-	${BLENDER_PATH} ./test/testscene.blend --python ./src/exporters/blender.py
+	PYTHONPATH=$(PWD)/src ${BLENDER_PATH} ./test/testscene.blend --python ./src/geocast/exporters/bootstrap.py
 
 # make dev will just run the dev code without the vite build step
 dev: ./data.json

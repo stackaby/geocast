@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import os
-import site
-import sys
 from collections.abc import Generator
 from functools import partial
 from typing import cast
@@ -128,8 +125,6 @@ def serialize_edit_mesh():
       header.vert_pos_len = len(vertices_arr)
       header.norm_len = len(normals_arr)
       header.uv_len = len(uvs_arr)
-      header.handedness = BLENDER_HANDEDNESS
-      header.up_axis = BLENDER_UP_AXIS
 
       payload_parts = [
          bytes(header),
@@ -205,35 +200,18 @@ def serialize_object():
    return b""
 
 
-if __name__ == "__main__":
-   # Set up the site packages of the virtual environment
-   if virtual_env := os.environ.get("VIRTUAL_ENV"):
-      site.addsitedir(
-         os.path.join(
-            virtual_env,
-            "lib",
-            f"python{sys.version_info.major}.{sys.version_info.minor}",
-            "site-packages",
-         )
-      )
-
-   # Send the blob to the server
+def main():
    import asyncio
 
    from websockets.asyncio.client import connect
 
-   async def geometry_update(blob: bytearray):
+   async def geometry_update(blob: bytes):
       async with connect(
          "ws://localhost:8080",
          additional_headers={"type": "auth", "role": "producer"},
       ) as websocket:
          await websocket.send(blob)
 
-         # message_return = await websocket.recv()
-
-         # print(message_return)  # Convert to log
-
-   # Run a function every so often
    def persistent_updater():
       blob = serialize_edit_mesh() if bpy.context.mode == "EDIT_MESH" else serialize_object()
       if blob:
@@ -241,3 +219,7 @@ if __name__ == "__main__":
       return 1.0 / 60
 
    bpy.app.timers.register(persistent_updater, persistent=True)
+
+
+if __name__ == "__main__":
+   main()
