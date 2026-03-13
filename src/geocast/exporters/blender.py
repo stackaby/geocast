@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import logging
 import ctypes
-from collections.abc import Generator
+from collections.abc import Generator, Callable
 from functools import partial
 from typing import cast
+import sys
 
 import bmesh
 import bpy
 import numpy
+from websockets import State
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 ID_t = bpy.types.ID
 Object_t = bpy.types.Object
@@ -200,25 +205,104 @@ def serialize_object():
    return b""
 
 
-def main():
-   import asyncio
+import asyncio
 
-   from websockets.asyncio.client import connect
+import websockets
+from websockets.asyncio.client import connect, ClientConnection
 
-   async def geometry_update(blob: bytes):
-      async with connect(
-         "ws://localhost:8080",
-         additional_headers={"type": "auth", "role": "producer"},
-      ) as websocket:
-         await websocket.send(blob)
 
-   def persistent_updater():
+async def client_connect():
+   return await connect("ws://localhost:8080", additional_headers={"type": "auth", "role": "producer"})
+
+
+async def client_send(
+   websocket: ClientConnection, blob: bytes, expect_response: bool = False
+) -> tuple[int, bytes | None]:
+   logging.debug("Before send")
+   try:
+      await websocket.send(blob)
+      logging.debug("Send")
+   except websockets.ConnectionClosed:
+      # Try to recover
+      return 1, None
+
+   if expect_response:
+      try:
+         return 0, cast(bytes, await websocket.recv())
+      except websockets.ConnectionClosed:
+         # Try to recover
+         return 1, None
+   return 0, None
+
+
+async def client_close(websocket: ClientConnection):
+   await websocket.close()
+
+
+class ClientConnectionHandler:
+   def __init__(self, handler: Callable[[ClientConnectionHandler], None]):
+      self._handler = handler
+      self._active = True
+      self._client_connection: ClientConnection | None = None
+
+   @property
+   def is_active(self) -> bool:
+      return self._active
+
+   @property
+   def ws(self) -> ClientConnection | None:
+      return self._client_connection
+
+   def start(self):
+      logging.debug("Handler start")
+      if not self._client_connection or self._client_connection.state == State.CLOSED:
+         self._client_connection = asyncio.run(client_connect())
+         print(self._client_connection)
+
+      self._active = True
+
+   def stop(self):
+      self._active = False
+
+   def close(self):
+      self.stop()
+
+      if self._client_connection:
+         asyncio.run(client_close(self._client_connection))
+
+   def __call__(self):
+      logging.debug("Calling")
+      print(self._active, self._client_connection)
+      if self._active and self._client_connection:
+         return self._handler(self)
+
+
+def persistent_geometry_updater(handler: ClientConnectionHandler):
+   logging.debug("Test")
+   if handler.is_active and handler.ws:
       blob = serialize_edit_mesh() if bpy.context.mode == "EDIT_MESH" else serialize_object()
+      logging.debug(blob)
       if blob:
-         asyncio.run(partial(geometry_update, blob)())
-      return 1.0 / 60
+         result = asyncio.run(client_send(handler.ws, blob))
+         logging.debug(result)
+         # If the result shows a closed connection, attempt to open it up again
+         if result[0] == 1:  # There was an error
+            try:
+               handler.start()
+            except (OSError, TimeoutError, RuntimeError):
+               # Log messages here
+               ...
 
-   bpy.app.timers.register(persistent_updater, persistent=True)
+   return 1.0 / 60
+
+
+HANDLER = ClientConnectionHandler(persistent_geometry_updater)
+
+
+def main():
+   HANDLER.start()
+
+   bpy.app.timers.register(HANDLER, persistent=True)
 
 
 if __name__ == "__main__":
