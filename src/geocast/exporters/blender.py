@@ -244,6 +244,8 @@ class ClientConnectionHandler:
       self._handler = handler
       self._active = True
       self._client_connection: ClientConnection | None = None
+      self._loop = asyncio.get_event_loop()
+      asyncio.set_event_loop(self._loop)
 
    @property
    def is_active(self) -> bool:
@@ -256,7 +258,7 @@ class ClientConnectionHandler:
    def start(self):
       logging.debug("Handler start")
       if not self._client_connection or self._client_connection.state == State.CLOSED:
-         self._client_connection = asyncio.run(client_connect())
+         self._client_connection = self._loop.run_until_complete(client_connect())
          print(self._client_connection)
 
       self._active = True
@@ -268,13 +270,18 @@ class ClientConnectionHandler:
       self.stop()
 
       if self._client_connection:
-         asyncio.run(client_close(self._client_connection))
+         self._loop.run_until_complete(client_close(self._client_connection))
+         self._loop.close()
 
    def __call__(self):
       logging.debug("Calling")
       print(self._active, self._client_connection)
+      if self._client_connection and self._client_connection.state == State.CLOSED:
+         return 0.0
+
       if self._active and self._client_connection:
          return self._handler(self)
+      return 1.0
 
 
 def persistent_geometry_updater(handler: ClientConnectionHandler):
