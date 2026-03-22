@@ -22,6 +22,7 @@ Streaming live geometry updates from Blender to a web browser via WebSockets for
 
 See STABILIZATION.md for detailed task tracking.
 
+- Phase 0: MVP Deployment (Railway + rooms)
 - Phase 3: Error handling & robustness
 - Phase 4: Code cleanup (remaining documentation tasks)
 - Material palette system
@@ -96,6 +97,7 @@ Metadata encoding:
 
 See ROADMAP.md for full details.
 
+- Railway deployment with rooms support
 - Snapshots & glb export
 - Materials and animation support
 - Multi-object streaming

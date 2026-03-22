@@ -71,6 +71,81 @@ Used for: Snapshots, dailies review, cloud storage, asset library, sharing with 
 
 ---
 
+## Phase 0: MVP Deployment
+
+**Goal:** Deploy to Railway with rooms support for easy demos.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│               Docker Container (Railway)            │
+│  ┌─────────────────┐    ┌─────────────────────────┐ │
+│  │  Static Server  │    │   WebSocket Server      │ │
+│  │  (frontend)     │    │   (relay)               │ │
+│  └─────────────────┘    └─────────────────────────┘ │
+│                        rooms: { A, B, C, ... }       │
+└─────────────────────────────────────────────────────┘
+         │                              │
+    Browser opens              Blender connects
+    ?room=ABC123               with room=ABC123
+```
+
+### URL Scheme (Query Params)
+
+```
+Producer: wss://geocast.app?room=ABC123&role=producer
+Consumer: wss://geocast.app?room=ABC123&role=consumer
+Browser:  https://geocast.app?room=ABC123
+```
+
+### Tasks
+
+- [ ] Server changes (`server.js`)
+  - Parse `room` from query string alongside `role`
+  - Store clients by room: `Map<roomId, { producer, consumers[] }>`
+  - Route messages only within same room
+  - Add static file serving for frontend
+  - Add `/health` endpoint for Railway
+
+- [ ] Frontend changes (`main.js`)
+  - Parse `?room=ABC123` from URL on page load
+  - Generate random room ID (6 chars) if no param
+  - Display room ID with copy-to-clipboard button
+  - Update WebSocket URL for production
+
+- [ ] Blender add-on changes (`blender.py`)
+  - Configurable or hardcoded server URL
+  - Add room ID input field in Blender UI
+  - Pass room ID in WebSocket connection
+
+- [ ] Docker setup
+  - Create Dockerfile (node:18-alpine)
+  - Serve static files + WebSocket on single port
+  - Bundle `dist/` directory
+
+- [ ] Deployment
+  - Railway account setup
+  - `railway init` and `railway up`
+  - Test end-to-end
+
+### Things to Handle
+
+- **Environment:** `PORT` set by Railway, `NODE_ENV=production`
+- **WebSocket origin:** May need origin checking for WSS upgrades
+- **Reconnection:** Producer and consumer reconnection logic
+- **Room ID generation:** 6-char alphanumeric (~1.9B combinations)
+- **Memory cleanup:** When to flush empty rooms?
+
+### Platform Choice: Railway
+
+- Free tier: 512MB RAM, 1GB disk, $5/month credits
+- Automatic HTTPS/WSS
+- WebSocket support out of the box
+- Single port deployment
+
+---
+
 ## Phase 1: Stabilization
 
 See [STABILIZATION.md](./STABILIZATION.md) for detailed tasks.
