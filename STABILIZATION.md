@@ -8,43 +8,9 @@ Stabilize the codebase before pushing forward with new features. Focus on fixing
 
 ## Phase 1: Add Up-Axis Metadata ✓
 
-**Goal:** Add minimal metadata needed for the orientation fix.
+**Completed:** Added `metadata` uint32 field to binary payload header encoding handedness ('R'/'L') and up-axis ('X'/'Y'/'Z'). Blender sends right-handed Z-up. Removed orphaned code. Documented format in `docs/format.md`.
 
-### Tasks
-
-- [x] Add metadata field to binary payload header
-  - Added `metadata` uint32 field to GeometryBufferHeader
-  - Encodes handedness ('R'/'L') and up-axis ('X'/'Y'/'Z') in byte 3 and 2
-  - Blender sends 'R' (right-handed) and 'Z' (Z-up)
-
-- [x] Document the binary format
-  - Created `docs/format.md` with current specification
-  - Note: versioning deferred until needed (see "When to Add Versioning")
-
-### Implemented Binary Format
-
-```
-Payload:
-  [header: 20 bytes]
-    - name_len: uint32
-    - metadata: uint32 (handedness | up_axis | reserved | reserved)
-    - positions_len: uint32
-    - normals_len: uint32
-    - uvs_len: uint32
-  [name: 32 bytes]
-  [positions: float32 array]
-  [normals: float32 array]
-  [uvs: float32 array]
-
-Metadata encoding:
-  - Byte 3 (MSB): Handedness ('L' or 'R')
-  - Byte 2: Up-axis ('X', 'Y', or 'Z')
-  - Bytes 0-1: Reserved
-```
-
-### Cleanup Needed
-
-- [ ] Remove orphaned code in `blender.py` lines 131-132 (header.handedness/up_axis don't exist)
+→ See "Protocol" in AGENTS.md for format specification.
 
 ---
 
@@ -91,10 +57,17 @@ if (upAxis === 'Z') {
 ### Tasks
 
 - [ ] Producer validation (blender.py)
-  - Check mesh has UVs before serializing
-  - Check mesh has triangles (non-empty)
-  - Handle missing active UV layer gracefully
-  - Log warnings instead of silently returning empty bytes
+   - Check mesh has UVs before serializing
+   - Check mesh has triangles (non-empty)
+   - Handle missing active UV layer gracefully
+   - Log warnings instead of silently returning empty bytes
+
+- [ ] Producer connection handling (blender.py)
+   - Fix event loop handling (`get_event_loop()` raises in Python 3.10+ if no loop)
+   - Replace `asyncio.run()` with `self._loop.run_until_complete()` to reuse event loop
+   - Move asyncio/websockets imports to top of file (PEP8)
+   - Test reconnection logic works when server disconnects
+   - Handle timer return value (0.0 stops timer - intentional?)
 
 - [ ] Relay robustness (server.js)
   - Validate message structure before broadcasting

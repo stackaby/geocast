@@ -11,7 +11,8 @@ Streaming live geometry updates from Blender to a web browser via WebSockets for
 
 ## Architecture
 
-- **Producer**: Blender addon (`src/exporters/blender.py`) - runs on 60fps timer, extracts mesh data
+- **Producer**: Blender addon (`src/geocast/exporters/blender.py`) - runs on 60fps timer, extracts mesh data
+  - Bootstrap (`src/geocast/exporters/bootstrap.py`) - sets up virtualenv site-packages before main script
 - **Relay**: Node.js WebSocket server (`assets/scripts/server.js`) - broadcasts from producer to consumers
 - **Consumer**: Browser three.js app (`assets/scripts/main.js`) - renders geometry
 
@@ -83,6 +84,13 @@ Metadata encoding:
 - Python: 3-space indentation (ruff formatter)
 - JavaScript: camelCase for variables, SCREAMING_SNAKE_CASE for constants
 - Constants at top of file
+
+### Bootstrap Pattern
+
+- Blender's embedded Python doesn't automatically load `sitecustomize.py` from PYTHONPATH
+- `bootstrap.py` explicitly adds virtualenv site-packages to `sys.path` before importing the main module
+- Entry point is `bootstrap.py` which calls `main()` from `blender.py`
+- Keeps environment setup isolated from business logic
 
 ## Future
 
