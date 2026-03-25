@@ -9,10 +9,11 @@ import sys
 
 import bmesh
 import bpy
+from bpy.types import Object
 import numpy
 from websockets import State
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 ID_t = bpy.types.ID
 Object_t = bpy.types.Object
@@ -244,8 +245,11 @@ class ClientConnectionHandler:
       self._handler = handler
       self._active = True
       self._client_connection: ClientConnection | None = None
-      self._loop = asyncio.get_event_loop()
-      asyncio.set_event_loop(self._loop)
+      self._loop = None
+
+   @property
+   def loop(self):
+      return self._loop
 
    @property
    def is_active(self) -> bool:
@@ -258,8 +262,8 @@ class ClientConnectionHandler:
    def start(self):
       logging.debug("Handler start")
       if not self._client_connection or self._client_connection.state == State.CLOSED:
+         self._loop = asyncio.new_event_loop()
          self._client_connection = self._loop.run_until_complete(client_connect())
-         print(self._client_connection)
 
       self._active = True
 
@@ -269,13 +273,13 @@ class ClientConnectionHandler:
    def close(self):
       self.stop()
 
-      if self._client_connection:
+      if self._client_connection and self._loop:
          self._loop.run_until_complete(client_close(self._client_connection))
          self._loop.close()
+         self._loop = None
 
    def __call__(self):
       logging.debug("Calling")
-      print(self._active, self._client_connection)
       if self._client_connection and self._client_connection.state == State.CLOSED:
          return 0.0
 
@@ -290,7 +294,7 @@ def persistent_geometry_updater(handler: ClientConnectionHandler):
       blob = serialize_edit_mesh() if bpy.context.mode == "EDIT_MESH" else serialize_object()
       logging.debug(blob)
       if blob:
-         result = asyncio.run(client_send(handler.ws, blob))
+         result = handler.loop.run_until_complete(client_send(handler.ws, blob))
          logging.debug(result)
          # If the result shows a closed connection, attempt to open it up again
          if result[0] == 1:  # There was an error
@@ -305,11 +309,102 @@ def persistent_geometry_updater(handler: ClientConnectionHandler):
 
 HANDLER = ClientConnectionHandler(persistent_geometry_updater)
 
+# Add a string property to the Scene
+bpy.types.Scene.my_input_text = bpy.props.StringProperty(
+   name="Server", description="Enter server address", default="localhost:5173"
+)
+
+
+class ConnectOperator(bpy.types.Operator):
+   bl_idname = "geocast.connect"
+   bl_label = "Connect"
+
+   def execute(self, context):
+      HANDLER.start()
+      return {"FINISHED"}
+
+
+class DisconnectOperator(bpy.types.Operator):
+   bl_idname = "geocast.disconnect"
+   bl_label = "Disconnect"
+
+   def execute(self, context):
+      HANDLER.close()
+      return {"FINISHED"}
+
+
+class GeocastPanel(bpy.types.Panel):
+   bl_idname = "GEOCAST_PT_connection_settings"
+   bl_label = "Settings"
+   bl_space_type = "PROPERTIES"
+   bl_region_type = "WINDOW"
+   bl_options = {"DEFAULT_CLOSED"}
+
+   @classmethod
+   def poll(cls, context):
+      return context.object is not None
+
+   def draw_header(self, context):
+      layout = self.layout
+      layout.label(text="Connection Settings")
+
+   def draw(self, context):
+      layout = self.layout
+
+      box = layout.box()
+      box.alignment = "LEFT"
+      box.label(text="Server Settings:")
+      box.prop(context.scene, "my_input_text")
+      box.operator("geocast.connect")
+      box.operator("geocast.disconnect")
+
+
+class GeocastMenu(bpy.types.Menu):
+   bl_idname = "TOPBAR_MT_geocast"
+   bl_label = "Geocast"
+   bl_description = "Geocast menu. Handle websocket connection to server."
+
+   def draw(self, context) -> None:
+      layout = self.layout
+
+      layout.label(text="Geocast Options:")
+
+      box = layout.box()
+
+      # Fake context with the box as layout
+      class Container:
+         pass
+
+      container = Container()
+      container.layout = box
+
+      GeocastPanel.draw(container, context)
+
+
+def draw_item(self, context):
+   layout = self.layout
+   layout.menu(GeocastMenu.bl_idname)
+
+
+def register():
+   bpy.utils.register_class(ConnectOperator)
+   bpy.utils.register_class(DisconnectOperator)
+   bpy.utils.register_class(GeocastPanel)
+   bpy.utils.register_class(GeocastMenu)
+   bpy.types.TOPBAR_MT_editor_menus.append(draw_item)
+
+
+def unregister():
+   bpy.utils.unregister_class(DisconnectOperator)
+   bpy.utils.unregister_class(GeocastMenu)
+   bpy.utils.unregister_class(GeocastPanel)
+   bpy.utils.unregister_class(ConnectOperator)
+   bpy.types.TOPBAR_MT_editor_menus.remove(draw_item)
+
 
 def main():
-   HANDLER.start()
-
    bpy.app.timers.register(HANDLER, persistent=True)
+   register()
 
 
 if __name__ == "__main__":
