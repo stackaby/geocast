@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-import logging
+import asyncio
 import ctypes
-from collections.abc import Generator, Callable
-from functools import partial
-from typing import cast
+import logging
 import sys
+from collections.abc import Callable, Generator
+from typing import cast
 
 import bmesh
 import bpy
-from bpy.types import Object
 import numpy
+import websockets
 from websockets import State
+from websockets.asyncio.client import ClientConnection, connect
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -206,14 +207,8 @@ def serialize_object():
    return b""
 
 
-import asyncio
-
-import websockets
-from websockets.asyncio.client import connect, ClientConnection
-
-
-async def client_connect():
-   return await connect("ws://localhost:8080", additional_headers={"type": "auth", "role": "producer"})
+async def client_connect(host: str = ""):
+   return await connect(f"ws://{host or 'localhost:8080'}", additional_headers={"type": "auth", "role": "producer"})
 
 
 async def client_send(
@@ -246,6 +241,7 @@ class ClientConnectionHandler:
       self._active = True
       self._client_connection: ClientConnection | None = None
       self._loop = None
+      self._server_host: str = ""
 
    @property
    def loop(self):
@@ -259,11 +255,13 @@ class ClientConnectionHandler:
    def ws(self) -> ClientConnection | None:
       return self._client_connection
 
-   def start(self):
-      logging.debug("Handler start")
+   def start(self, host: str = ""):
+      if host != self._server_host:
+         self.close()
+
       if not self._client_connection or self._client_connection.state == State.CLOSED:
          self._loop = asyncio.new_event_loop()
-         self._client_connection = self._loop.run_until_complete(client_connect())
+         self._client_connection = self._loop.run_until_complete(client_connect(host or self._server_host))
 
       self._active = True
 
@@ -277,6 +275,7 @@ class ClientConnectionHandler:
          self._loop.run_until_complete(client_close(self._client_connection))
          self._loop.close()
          self._loop = None
+         self._client_connection = None
 
    def __call__(self):
       logging.debug("Calling")
@@ -310,8 +309,8 @@ def persistent_geometry_updater(handler: ClientConnectionHandler):
 HANDLER = ClientConnectionHandler(persistent_geometry_updater)
 
 # Add a string property to the Scene
-bpy.types.Scene.my_input_text = bpy.props.StringProperty(
-   name="Server", description="Enter server address", default="localhost:5173"
+bpy.types.Scene.server_host = bpy.props.StringProperty(
+   name="Server", description="Enter server address", default="localhost:8080"
 )
 
 
@@ -320,7 +319,9 @@ class ConnectOperator(bpy.types.Operator):
    bl_label = "Connect"
 
    def execute(self, context):
-      HANDLER.start()
+      # Get the value of the server host from the scene property
+      server_host = context.scene.server_host
+      HANDLER.start(server_host)
       return {"FINISHED"}
 
 
@@ -354,7 +355,7 @@ class GeocastPanel(bpy.types.Panel):
       box = layout.box()
       box.alignment = "LEFT"
       box.label(text="Server Settings:")
-      box.prop(context.scene, "my_input_text")
+      box.prop(context.scene, "server_host")
       box.operator("geocast.connect")
       box.operator("geocast.disconnect")
 

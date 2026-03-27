@@ -1,4 +1,4 @@
-import { WebSocketServer } from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import url from 'url';
 
 const PORT = 8080;
@@ -45,12 +45,12 @@ wss.on('connection', function connection(ws, request) {
 
    ws.on('message', function message(data) {
       const consumers = clients.get(CONSUMERS_MAP_KEY);
-      if (consumers) {
-         // Send data to all the consumers
-         for (let consumer of consumers) {
-            consumer.send(data.buffer);
+
+      wss.clients.forEach(function each(client) {
+         if (client !== ws && consumers.includes(client) && client.readyState === WebSocket.OPEN) {
+            client.send(data.buffer);
          }
-      }
+      });
    });
 
    ws.on('close', function close() {
