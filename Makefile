@@ -17,9 +17,10 @@ dev: ./data.json
 
 build:
 	npm run build
-	cp ./data.json ./dist/
+#	cp ./data.json ./dist/
+	cp ./assets/scripts/server.js ./dist/assets/
 	# Then copy the data into the dist location
-	npx vite dist
+#	npx vite dist
 
 
 .PHONY: clean
