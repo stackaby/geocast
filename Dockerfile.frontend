@@ -4,11 +4,14 @@ WORKDIR /app
 
 # Install the requirements
 # three.js, vite, ws, etc.
-COPY ./package.json ./package-lock.json ./dist/ .
+ARG DEV
+ARG FRONTEND=${DEV:+.}
+ARG FRONTEND=${FRONTEND:-./dist}
+COPY ./package.json ./package-lock.json ${FRONTEND}/index.html .
+COPY ${FRONTEND}/assets/ ./assets/
 
 RUN npm install
 
 EXPOSE 5173
-#EXPOSE 8080
 
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
