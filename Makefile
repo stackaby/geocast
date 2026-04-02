@@ -11,9 +11,14 @@ data:
 	PYTHONPATH=$(PWD)/src ${BLENDER_PATH} ./test/testscene.blend --python ./src/geocast/exporters/bootstrap.py
 
 # make dev will just run the dev code without the vite build step
-dev: ./data.json
-	node assets/scripts/server.js &
-	npm run dev
+dev:
+	DEV=true docker compose up --watch
+	#node assets/scripts/server.js &
+	#npm run dev
+
+prod:
+	make clean && make build
+	docker compose up
 
 build:
 	npm run build
@@ -25,4 +30,7 @@ build:
 
 .PHONY: clean
 clean:
-	rm -r $(BUILD_DIR)
+
+	docker compose down --rmi local
+
+	rm -rf $(BUILD_DIR)
