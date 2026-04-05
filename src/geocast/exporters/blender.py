@@ -208,7 +208,7 @@ def serialize_object():
 
 
 async def client_connect(host: str = ""):
-   return await connect(f"ws://{host or 'localhost:8080'}", additional_headers={"type": "auth", "role": "producer"})
+   return await connect(f"wss://{host or 'localhost:8080'}", additional_headers={"type": "auth", "role": "producer"})
 
 
 async def client_send(

@@ -2,27 +2,14 @@ name: geocast
 
 services:
   geocast.frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-      args:
-        DEV: ${DEV:+true}
+    image: stackaby/geocast.frontend:latest
     ports:
       - 5173:5173
     depends_on:
       - geocast.backend
-    develop:
-      watch:
-        - action: sync
-          path: ./index.html
-          target: /app/index.html
 
   geocast.backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-      args:
-        DEV: ${DEV:+true}
+    image: stackaby/geocast.backend:latest
     ports:
       - 8080:8080
 

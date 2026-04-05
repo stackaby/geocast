@@ -1,0 +1,31 @@
+name: geocast
+
+services:
+  geocast.frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        DEV: ${DEV:+true}
+    ports:
+      - 5173:5173
+    depends_on:
+      - geocast.backend
+    develop:
+      watch:
+        - action: sync
+          path: ./index.html
+          target: /app/index.html
+        - action: sync
+          path: ./assets/scripts/
+          target: /app/assets/
+
+  geocast.backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        DEV: ${DEV:+true}
+    ports:
+      - 8080:8080
+

@@ -125,9 +125,8 @@ function updateGeometry({ positions, normals, uvs, rotation }) {
 
 
 // Set up the consumer client
-const hostname = window.location.hostname;
-console.log(hostname);
-const WS_URI = `ws://${hostname}:8080?type=auth&role=consumer`;
+const hostname = window.__BACKEND_URL__?.trim() || window.location.hostname;
+const WS_URI = `wss://${hostname}?type=auth&role=consumer`;
 const websocket = new WebSocket(WS_URI);
 websocket.binaryType = "arraybuffer";  // Expecting an array buffer from the server
 
