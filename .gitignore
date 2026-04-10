@@ -1,6 +1,15 @@
 # Node
 node_modules/
 
+# yarn
+.yarn/*
+!.yarn/cache
+!.yarn/releases
+!.yarn/plugins
+!.yarn/unplugged
+
+# vite cache
+.vite
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

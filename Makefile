@@ -13,20 +13,14 @@ data:
 # make dev will just run the dev code without the vite build step
 dev:
 	DEV=true docker compose up --watch
-	#node assets/scripts/server.js &
-	#npm run dev
 
 prod:
 	make clean && make build
 	docker compose up
 
 build:
-	npm run build
-#	cp ./data.json ./dist/
+	yarn run build
 	cp ./assets/scripts/server.js ./dist/assets/
-	# Then copy the data into the dist location
-#	npx vite dist
-
 
 .PHONY: clean
 clean:
