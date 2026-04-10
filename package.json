@@ -1,19 +1,13 @@
 {
-  "dependencies": {
-    "three": "^0.182.0",
-    "ws": "^8.19.0"
-  },
-  "devDependencies": {
-    "vite": "^8.0.8"
-  },
   "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "optionalDependencies": {
-    "bufferutil": "^4.1.0"
+    "dev:": "yarn --cwd frontend vite --host",
+    "build:": "yarn --cwd frontend vite build",
+    "preview:": "yarn --cwd frontend vite preview"
   },
   "type": "module",
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.13.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ]
 }
