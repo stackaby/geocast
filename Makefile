@@ -8,11 +8,12 @@ data:
 	@test -n "$(BLENDER_PATH)" || (echo "Error: BLENDER_PATH is not set. Please add it to your shell"; exit 1)
 	@test -n "$(VIRTUAL_ENV)" || echo "Warning: Not in a virtual environment. Run 'poetry shell' first for dependencies."
 	@echo "Using Blender at: $(BLENDER_PATH)"
-	PYTHONPATH=$(PWD)/src ${BLENDER_PATH} ./test/testscene.blend --python ./clients/blender/geocast/bootstrap.py
+	PYTHONPATH=$(PWD)/clients/blender ${BLENDER_PATH} ./test/testscene.blend --python ./clients/blender/geocast/bootstrap.py
 
 # make dev will just run the dev code without the vite build step
 dev:
-	DEV=true docker compose up --watch
+#	DEV=true docker compose up --watch
+	yarn dev: && node ./backend/src/server.js
 
 prod:
 	make clean && make build

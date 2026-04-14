@@ -27,7 +27,6 @@ camera.lookAt(0, 0, 0);  // Look at the center origin
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
@@ -147,3 +146,9 @@ function animate() {
 }
 
 renderer.setAnimationLoop(animate);
+
+
+export function showScene(sceneCode) {
+   // TODO Use the sceneCode to update websocket connection
+   document.body.appendChild(renderer.domElement);
+}

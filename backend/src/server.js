@@ -1,13 +1,63 @@
+import { createServer } from 'http';
+import express from 'express';
 import WebSocket, { WebSocketServer } from 'ws';
+import path from 'path';
 import url from 'url';
+import { fileURLToPath } from 'url';
+import crypto from 'crypto'
 
-const PORT = 8080;
+const __fileName = fileURLToPath(import.meta.url);
+const __dirName = path.dirname(__fileName);
+
+
+const PORT = 3000;
+const ROOM_CODE_LEN = 6
 const PRODUCER_TYPE = "PRODUCER";
 const CONSUMER_TYPE = "CONSUMER";
 const PRODUCER_MAP_KEY = "producer";
 const CONSUMERS_MAP_KEY = "consumers";
 
-const wss = new WebSocketServer({ port: PORT });
+// TODO: ROOMS will be more than just a number. I might want to capture some metadata such as timestamp when creating
+// TODO It will also be a good idea to create a timer periodically for each room so that it cleans up the room after a user doesn't use the room for a given time period (try: 5 minutes at first - make this configurable)
+let ROOMS = new Set();
+
+const app = express();
+const server = createServer(app)
+const wss = new WebSocketServer({ server: server });
+
+
+
+// Generate a random room number
+function generateRoomCode() {
+   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+   const bytes = crypto.randomBytes(ROOM_CODE_LEN);
+   let code = [];
+   for (let byte of bytes) {
+      code.push(chars[byte % chars.length]);
+   }
+   return code.join("");
+}
+
+
+
+app.get('/', (req, res) => {
+   res.send("Hello, World!");
+   //res.sendFile(path.join(__dirName, "index.html"));
+});
+
+app.post('/api/rooms', (req, res) => {
+
+   let code;
+   do {
+      code = generateRoomCode();
+   } while (ROOMS.has(code));
+
+   ROOMS.add(code);
+   console.log(code);
+
+   res.json({ "code": code });
+});
+
 
 let clients = new Map();
 
@@ -77,3 +127,7 @@ function getClientType(request) {
    if (role === "consumer") return CONSUMER_TYPE;
    return undefined;
 }
+
+server.listen(PORT, () => {
+   console.log(`Example app listening on port ${PORT}`);
+})

@@ -22,7 +22,7 @@ if pythonpath := os.environ.get("PYTHONPATH"):
       if path not in sys.path:
          sys.path.insert(0, path)
 
-from geocast.exporters.blender import main
+from geocast.blender import main
 
 if __name__ == "__main__":
    main()
