@@ -53,9 +53,18 @@ app.post('/api/rooms', (req, res) => {
    } while (ROOMS.has(code));
 
    ROOMS.add(code);
-   console.log(code);
 
    res.json({ "code": code });
+});
+
+app.get('/api/room', (req, res) => {
+   const roomCode = req.query?.code;
+   if (roomCode !== undefined || roomCode !== "") {
+      if (ROOMS.has(roomCode))
+         res.status(200).json({ exists: true });
+   }
+
+   res.status(404).json({ exists: false });
 });
 
 

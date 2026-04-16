@@ -4,18 +4,19 @@ import { showScene } from './scene.js';
 // For get room page
 // When I do this I need to query the server to create a number for me
 function showHome() {
+   const url = new URL(window.location.href);
    document.getElementById("button").onclick = async function() {
       console.log("Clicked");
-      let response = await fetch("http://localhost:5173/api/rooms", { method: "POST" });
+      let response = await fetch(`http://${url.hostname}:${url.port}/api/rooms`, { method: "POST" });
       const data = await response.json();
-      const url = `http://localhost:5173/room/${data.code}`;
-      document.getElementById("room-response").innerHTML = `Please visit your room at <a href="${url}">${url}</a>`;
+      const roomUrl = `http://${url.hostname}:${url.port}/room/${data.code}`;
+      document.getElementById("room-response").innerHTML = `Please visit your room at <a href="${roomUrl}">${roomUrl}</a>`;
    };
 }
 
 
 // Check the path
-window.onload = () => {
+window.onload = async () => {
    const url = new URL(window.location.href);
 
    if (url.pathname === "/")  // Load the create room button page
@@ -24,17 +25,32 @@ window.onload = () => {
    }
    else if (url.pathname.startsWith("/room/")) {
       const roomCode = url.pathname.split("/room/")[1];
-      console.log(`Room code: ${roomCode}`);
-      showScene();
+      // Check to see if the room exists
+      const response = await fetch(`http://${url.hostname}:${url.port}/api/room?code=${roomCode}`, {
+         method: "GET",
+         mode: "cors",
+      });
+      if (response.status === 200) {
+
+         console.log(`Room code: ${roomCode}`);
+         showScene();
+      }
+      else {
+         // Throw an error here
+         document.getElementById("app").innerHTML = `
+            <h1>404</h1>
+            <p>Page not found</p>
+            <a href="/">Go Home</a>
+         `;
+      }
    }
    else {
       // Throw an error here
       document.getElementById("app").innerHTML = `
-         <h1>404</h1>
-         <p>Page not found</p>
-         <a href="/">Go Home</a>
-      `;
-
+      <h1>404</h1>
+      <p>Page not found</p>
+      <a href="/">Go Home</a>
+   `;
    }
 }
 
