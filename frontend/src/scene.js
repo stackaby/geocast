@@ -1,6 +1,38 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+// Add events to be organized later
+// Resizing
+window.addEventListener("resize", (event) => {
+   camera.aspect = window.innerWidth / window.innerHeight;
+   camera.updateProjectionMatrix();
+   renderer.setSize(window.innerWidth, window.innerHeight);
+   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+// Fullscreen
+window.addEventListener("dblclick", (event) => {
+   const fullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+   if (!fullscreen) {
+      if (renderer.domElement.requestFullscreen) {
+         renderer.domElement.requestFullscreen();
+      }
+      else {
+         renderer.domElement.webkitRequestFullscreen();
+      }
+   }
+   else {
+      if (document.exitFullscreen) {
+         document.exitFullscreen();
+      }
+      else {
+         document.webkitExitFullscreen();
+      }
+   }
+});
+
+
 const MAX_VERTICES = 100000;
 const POS_NUM_COMPONENTS = 3;
 const NORM_NUM_COMPONENTS = 3;
@@ -27,6 +59,7 @@ camera.lookAt(0, 0, 0);  // Look at the center origin
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
@@ -150,5 +183,5 @@ renderer.setAnimationLoop(animate);
 
 export function showScene(sceneCode) {
    // TODO Use the sceneCode to update websocket connection
-   document.body.appendChild(renderer.domElement);
+   document.getElementById("app").replaceChildren(renderer.domElement);
 }
