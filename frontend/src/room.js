@@ -6,7 +6,6 @@ import { showScene } from './scene.js';
 function showHome() {
    const url = new URL(window.location.href);
    document.getElementById("button").onclick = async function() {
-      console.log("Clicked");
       let response = await fetch(`http://${url.hostname}:${url.port}/api/rooms`, { method: "POST" });
       const data = await response.json();
       const roomUrl = `http://${url.hostname}:${url.port}/room/${data.code}`;
@@ -16,7 +15,7 @@ function showHome() {
 
 
 // Check the path
-window.onload = async () => {
+document.addEventListener("DOMContentLoaded", async () => {
    const url = new URL(window.location.href);
 
    if (url.pathname === "/")  // Load the create room button page
@@ -31,9 +30,7 @@ window.onload = async () => {
          mode: "cors",
       });
       if (response.status === 200) {
-
-         console.log(`Room code: ${roomCode}`);
-         showScene();
+         showScene(roomCode);
       }
       else {
          // Throw an error here
@@ -52,5 +49,4 @@ window.onload = async () => {
       <a href="/">Go Home</a>
    `;
    }
-}
-
+});

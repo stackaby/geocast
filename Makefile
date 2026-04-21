@@ -13,8 +13,7 @@ data:
 # make dev will just run the dev code without the vite build step
 dev:
 #	DEV=true docker compose up --watch
-	yarn node ./backend/src/server.js
-	yarn dev:
+	yarn dev: & yarn node ./backend/src/server.js
 
 prod:
 	make clean && make build

@@ -25,6 +25,11 @@ const app = express();
 const server = createServer(app)
 const wss = new WebSocketServer({ server: server });
 
+// Add this immediately after creating app
+app.use((req, res, next) => {
+   console.log('=== INCOMING ===', req.method, req.url);
+   next();
+});
 
 
 // Generate a random room number
@@ -40,11 +45,6 @@ function generateRoomCode() {
 
 
 
-app.get('/', (req, res) => {
-   res.send("Hello, World!");
-   //res.sendFile(path.join(__dirName, "index.html"));
-});
-
 app.post('/api/rooms', (req, res) => {
 
    let code;
@@ -54,17 +54,18 @@ app.post('/api/rooms', (req, res) => {
 
    ROOMS.add(code);
 
-   res.json({ "code": code });
+   return res.json({ "code": code });
 });
 
 app.get('/api/room', (req, res) => {
    const roomCode = req.query?.code;
-   if (roomCode !== undefined || roomCode !== "") {
-      if (ROOMS.has(roomCode))
-         res.status(200).json({ exists: true });
+   if (roomCode !== undefined && roomCode !== "") {
+      if (ROOMS.has(roomCode)) {
+         return res.status(200).json({ exists: true });
+      }
+      return res.status(404).json({ exists: false });
    }
-
-   res.status(404).json({ exists: false });
+   res.status(400).json({ error: "Missing room code" });
 });
 
 
@@ -138,5 +139,5 @@ function getClientType(request) {
 }
 
 server.listen(PORT, () => {
-   console.log(`Example app listening on port ${PORT}`);
+   console.log(`Geocast app listening on port ${PORT}`);
 })

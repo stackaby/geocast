@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+export function showScene(sceneCode) {
+   // TODO Use the sceneCode to update websocket connection
+   document.getElementById("app").replaceChildren(renderer.domElement);
+}
+
+
 // Add events to be organized later
 // Resizing
 window.addEventListener("resize", (event) => {
@@ -178,10 +184,7 @@ function animate() {
    renderer.render(scene, camera);
 }
 
+
 renderer.setAnimationLoop(animate);
 
 
-export function showScene(sceneCode) {
-   // TODO Use the sceneCode to update websocket connection
-   document.getElementById("app").replaceChildren(renderer.domElement);
-}
