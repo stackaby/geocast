@@ -1,0 +1,17 @@
+ {
+  "compilerOptions": {
+    "outDir": "./built",
+    "composite": true,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "target": "esnext",
+    "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "strict": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "moduleDetection": "force",
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["./frontend/**/*", "./backend/**/*"]
+}

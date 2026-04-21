@@ -11,6 +11,9 @@ node_modules/
 # vite cache
 .vite
 
+# typescript
+built/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
