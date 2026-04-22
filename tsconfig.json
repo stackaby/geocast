@@ -1,6 +1,6 @@
  {
   "compilerOptions": {
-    "outDir": "./built",
+    "outDir": "./dist",
     "composite": true,
     "lib": ["esnext", "dom", "dom.iterable"],
     "target": "esnext",
@@ -13,5 +13,8 @@
     "moduleDetection": "force",
     "noUncheckedIndexedAccess": true
   },
-  "include": ["./frontend/**/*", "./backend/**/*"]
+  "include": [
+      //"./frontend/**/*",
+      "./backend/**/*"
+   ]
 }

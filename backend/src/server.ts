@@ -1,4 +1,4 @@
-import { createServer } from 'http';
+import { createServer, IncomingMessage } from 'http';
 import express from 'express';
 import WebSocket, { WebSocketServer } from 'ws';
 import path from 'path';
@@ -26,7 +26,7 @@ const server = createServer(app)
 const wss = new WebSocketServer({ server: server });
 
 // Add this immediately after creating app
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
    console.log('=== INCOMING ===', req.method, req.url);
    next();
 });
@@ -45,7 +45,7 @@ function generateRoomCode() {
 
 
 
-app.post('/api/rooms', (req, res) => {
+app.post('/api/rooms', (_req, res) => {
 
    let code;
    do {
@@ -71,7 +71,7 @@ app.get('/api/room', (req, res) => {
 
 let clients = new Map();
 
-wss.on('connection', function connection(ws, request) {
+wss.on('connection', function connection(ws: WebSocket, request: IncomingMessage): void {
 
    const clientType = getClientType(request);
 
@@ -103,7 +103,7 @@ wss.on('connection', function connection(ws, request) {
 
    ws.on('error', console.error);
 
-   ws.on('message', function message(data) {
+   ws.on('message', function message(data: DataView) {
       const consumers = clients.get(CONSUMERS_MAP_KEY);
 
       wss.clients.forEach(function each(client) {
@@ -130,9 +130,8 @@ wss.on('connection', function connection(ws, request) {
 });
 
 
-function getClientType(request) {
-
-   const role = request.headers?.role || url.parse(request.url, true).query?.role;
+function getClientType(request: IncomingMessage): string | undefined {
+   const role = request.headers?.role || url.parse(request.url as string, true).query?.role;
    if (role === "producer") return PRODUCER_TYPE;
    if (role === "consumer") return CONSUMER_TYPE;
    return undefined;
