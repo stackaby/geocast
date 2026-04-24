@@ -68,6 +68,9 @@ Used for: Snapshots, dailies review, cloud storage, asset library, sharing with 
   - ✓ Orbit camera controls (OrbitControls)
   - ✓ Z-up to Y-up orientation handling
   - ✓ Metadata in binary payload (handedness, up-axis)
+  - ✓ Room-based streaming with unique room codes
+  - ✓ TypeScript conversion
+  - ✓ Yarn workspaces + Vite build system
 
 ---
 
@@ -88,46 +91,56 @@ Used for: Snapshots, dailies review, cloud storage, asset library, sharing with 
 └─────────────────────────────────────────────────────┘
          │                              │
     Browser opens              Blender connects
-    ?room=ABC123               with room=ABC123
+    /room/{code}               with roomCode={code}
 ```
 
-### URL Scheme (Query Params)
+### URL Scheme
 
 ```
-Producer: wss://geocast.app?room=ABC123&role=producer
-Consumer: wss://geocast.app?room=ABC123&role=consumer
-Browser:  https://geocast.app?room=ABC123
+Browser:   https://geocast.app/              → Home page (create room)
+Browser:   https://geocast.app/room/ABC123   → Room view (consumer)
+Producer:  wss://geocast.app/?roomCode=ABC123&role=producer
+Consumer:  wss://geocast.app/?roomCode=ABC123&role=consumer
 ```
 
-### Tasks
+### Completed Tasks
 
-- [ ] Server changes (`server.js`)
-  - Parse `room` from query string alongside `role`
-  - Store clients by room: `Map<roomId, { producer, consumers[] }>`
-  - Route messages only within same room
-  - Add static file serving for frontend
-  - Add `/health` endpoint for Railway
+- [x] Server changes (`server.ts`)
+  - [x] Parse room code from URL params
+  - [x] Store clients by room: `Map<roomId, Room>`
+  - [x] Route messages only within same room
+  - [x] Static file serving via Express
+  - [x] Room creation/validation API endpoints (`/api/rooms`, `/api/room`)
 
-- [ ] Frontend changes (`main.js`)
-  - Parse `?room=ABC123` from URL on page load
-  - Generate random room ID (6 chars) if no param
-  - Display room ID with copy-to-clipboard button
-  - Update WebSocket URL for production
+- [x] Frontend changes (`room.ts`, `scene.ts`)
+  - [x] Parse room code from URL path (`/room/{code}`)
+  - [x] Room creation via API call
+  - [x] Home page with room creation UI
+  - [x] Room existence validation before scene load
+  - [x] Runtime config injection (`window.__BACKEND_URL__`)
 
-- [ ] Blender add-on changes (`blender.py`)
-  - Configurable or hardcoded server URL
-  - Add room ID input field in Blender UI
-  - Pass room ID in WebSocket connection
+- [x] Blender add-on changes (`blender.py`)
+  - [x] Pass room code via WebSocket connection (headers)
 
-- [ ] Docker setup
-  - Create Dockerfile (node:18-alpine)
-  - Serve static files + WebSocket on single port
-  - Bundle `dist/` directory
+- [x] Build system
+  - [x] TypeScript conversion (server.ts, scene.ts, room.ts)
+  - [x] Yarn workspaces (frontend + backend)
+  - [x] Vite for frontend bundling
+  - [x] Makefile for dev/prod orchestration
 
-- [ ] Deployment
-  - Railway account setup
-  - `railway init` and `railway up`
-  - Test end-to-end
+### Remaining Tasks
+
+- [ ] Docker configuration
+  - [ ] Update Dockerfiles for new paths (backend/src/, frontend/dist/)
+  - [ ] Update entrypoint.sh for Vite output structure
+  - [ ] Add .dockerignore
+  - [ ] Single-port deployment (static files + WebSocket)
+
+- [ ] Railway deployment
+  - [ ] Environment variable handling (`PORT`)
+  - [ ] Add `/health` endpoint
+  - [ ] `railway init` and `railway up`
+  - [ ] Test end-to-end
 
 ### Things to Handle
 

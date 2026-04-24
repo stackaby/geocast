@@ -21,25 +21,25 @@ Stabilize the codebase before pushing forward with new features. Focus on fixing
 ### Tasks
 
 - [x] Producer side (blender.py)
-  - Added metadata field with handedness and up-axis
-  - Sends raw data (no transformation)
-  - `BLENDER_HANDEDNESS = ord('R')`, `BLENDER_UP_AXIS = ord('Z')`
+   - Added metadata field with handedness and up-axis
+   - Sends raw data (no transformation)
+   - `BLENDER_HANDEDNESS = ord('R')`, `BLENDER_UP_AXIS = ord('Z')`
 
-- [x] Consumer side (main.js)
-  - Parse metadata field from header
-  - Extract handedness and up-axis from bytes
-  - Apply rotation transformation: Z-up → Y-up via `rotation.makeRotationX(-Math.PI / 2)`
+ - [x] Consumer side (scene.ts)
+   - Parse metadata field from header
+   - Extract handedness and up-axis from bytes
+   - Apply rotation transformation: Z-up → Y-up via `rotation.makeRotationX(-Math.PI / 2)`
 
-- [ ] Test with multiple objects in Blender
-  - Verify orientation is correct
-  - Test with non-symmetric geometry
+ - [ ] Test with multiple objects in Blender
+   - Verify orientation is correct
+   - Test with non-symmetric geometry
 
-- [x] Update AGENTS.md with implemented solution
+ - [x] Update AGENTS.md with implemented solution
 
 ### Reference
 
-From main.js:
-```javascript
+From scene.ts:
+```typescript
 const handedness = String.fromCharCode(header.metadata >> 24 & 0xFF);
 const upAxis = String.fromCharCode(header.metadata >> 16 & 0xFF);
 
@@ -105,67 +105,55 @@ if (upAxis === 'Z') {
   - [ ] Docstrings on key functions
 
 - [x] Code organization (blender.py)
-  - [x] Reorganized imports (removed unused)
-  - [x] Formatted with 3-space indentation (ruff)
-  - [x] Removed empty function
-  - [x] Removed redundant `bytearray()` wrapper (lines 135, 196) — now using `b"".join()` directly
-  - [ ] Address global mutable state (`MESH_OBJECTS` at module level) - optional refactor
+   - [x] Reorganized imports (removed unused)
+   - [x] Formatted with 3-space indentation (ruff)
+   - [x] Removed empty function
+   - [x] Removed redundant `bytearray()` wrapper (lines 135, 196) — now using `b"".join()` directly
+   - [ ] Address global mutable state (`MESH_OBJECTS` at module level) - optional refactor
+   - [ ] Standardize binary payload construction
+   - `serialize_edit_mesh()` uses ctypes arrays
+   - `serialize_object()` uses numpy arrays with `.flatten()`
+   - [ ] Pick one approach for consistency (recommend numpy)
+   - Consider pre-allocating buffer for large meshes (optional optimization)
 
-- [ ] Standardize binary payload construction
-  - `serialize_edit_mesh()` uses ctypes arrays
-  - `serialize_object()` uses numpy arrays with `.flatten()`
-  - [ ] Pick one approach for consistency (recommend numpy)
-  - Consider pre-allocating buffer for large meshes (optional optimization)
+ - [x] JavaScript cleanup (scene.ts)
+   - [x] Removed dead code block
+   - [x] Fixed duplicated buffer attribute setting code
+   - [x] Optimized updates: pre-allocated BufferAttributes, update in place with `needsUpdate`
+   - [x] Extracted magic numbers to constants (BYTES_PER_FLOAT, HEADER_LEN, colors, camera settings)
+   - [x] Cleaned up unused constants
+   - [x] Removed redundant camera position overwrite
+   - [x] Removed unnecessary `geoBuffers` variable
+   - [x] Extracted parsing logic into `parseGeoData()` function
+   - [x] Extracted header parsing into `parseHeader()` function
+   - [x] Extracted update logic into `updateGeometry()` function with destructuring
+   - [x] Converted header object to camelCase (nameLen, positionsLen, etc.)
+   - [ ] Add overflow check for large meshes:
+     ```typescript
+     if (header.positions_len > MAX_VERTICES * 3) {
+        console.warn("Mesh exceeds MAX_VERTICES");
+        return;
+     }
+     ```
+   - [ ] Consider dynamic buffer sizing (resize when needed instead of fixed MAX_VERTICES)
+   - [ ] Add error handling for WebSocket and parsing
 
-- [x] JavaScript cleanup (main.js)
-  - [x] Removed dead code block (old lines 75-89)
-  - [x] Fixed duplicated buffer attribute setting code
-  - [x] Optimized updates: pre-allocated BufferAttributes, update in place with `needsUpdate`
-  - [x] Extracted magic numbers to constants (BYTES_PER_FLOAT, HEADER_LEN, colors, camera settings)
-  - [x] Cleaned up unused constants (removed positionNumComponents, etc.)
-  - [x] Removed redundant camera position overwrite
-  - [x] Removed unnecessary `geoBuffers` variable
-  - [x] Extracted parsing logic into `parseGeoData()` function
-  - [x] Extracted header parsing into `parseHeader()` function
-  - [x] Extracted update logic into `updateGeometry()` function with destructuring
-  - [x] Converted header object to camelCase (nameLen, positionsLen, etc.)
-  - [ ] Add overflow check for large meshes:
-    ```javascript
-    if (header.positions_len > MAX_VERTICES * 3) {
-       console.warn("Mesh exceeds MAX_VERTICES");
-       return;
-    }
-    ```
-  - [ ] Consider dynamic buffer sizing (resize when needed instead of fixed MAX_VERTICES)
-  - [ ] Add error handling for WebSocket and parsing
+ - [x] Server cleanup (server.ts)
+   - [x] Fix consumer cleanup on disconnect (remove from consumers array)
+   - [x] Fix confusing assignment in conditional
+   - [x] Extract constants to top (PORT, PRODUCER_TYPE, etc.)
+   - [x] Extract getClientType() function
+   - [x] Use switch statements for client type handling
+   - [ ] Add message validation before broadcasting (optional)
+   - [ ] Prevent memory leak from disconnected clients (partially done)
 
-- [x] JavaScript cleanup (server.js)
-  - [x] Fix consumer cleanup on disconnect (remove from consumers array)
-  - [x] Fix confusing assignment in conditional
-  - [x] Extract constants to top (PORT, PRODUCER_TYPE, etc.)
-  - [x] Extract getClientType() function
-  - [x] Use switch statements for client type handling
-  - [ ] Add message validation before broadcasting (optional)
-  - [ ] Prevent memory leak from disconnected clients (partially done)
-
-- [ ] TypeScript readiness
-  - Define interfaces for data structures (future TypeScript conversion):
-    ```typescript
-    interface GeoBuffers {
-      positions: Float32Array;
-      normals: Float32Array;
-      uvs: Float32Array;
-    }
-
-    interface PayloadHeader {
-      name_len: number;
-      positions_len: number;
-      normals_len: number;
-      uvs_len: number;
-    }
-    ```
-  - Code already uses modern JS patterns (ES modules, const/let, arrow functions)
-  - TypeScript conversion should be straightforward when ready
+ - [x] TypeScript conversion
+   - [x] server.js → server.ts
+   - [x] main.js → scene.ts
+   - [x] Added room.ts for routing logic
+   - [x] Added Room type interface
+   - [x] Added tsconfig.json with workspaces support
+   - [x] Added window.__BACKEND_URL__ type declaration (config.d.ts)
 
 ---
 

@@ -11,31 +11,34 @@ Streaming live geometry updates from Blender to a web browser via WebSockets for
 
 ## Architecture
 
-- **Producer**: Blender addon (`src/geocast/exporters/blender.py`) - runs on 60fps timer, extracts mesh data
-  - Bootstrap (`src/geocast/exporters/bootstrap.py`) - sets up virtualenv site-packages before main script
-- **Relay**: Node.js WebSocket server (`assets/scripts/server.js`) - broadcasts from producer to consumers
-- **Consumer**: Browser three.js app (`assets/scripts/main.js`) - renders geometry
+- **Producer**: Blender addon (`clients/blender/geocast/blender.py`) - runs on 60fps timer, extracts mesh data
+  - Bootstrap (`clients/blender/geocast/bootstrap.py`) - sets up virtualenv site-packages before main script
+- **Relay**: Node.js WebSocket server (`backend/src/server.ts`) - broadcasts from producer to consumers
+- **Consumer**: Browser three.js app (`frontend/src/scene.ts`, `frontend/src/room.ts`) - renders geometry
+  - Room-based routing: home page creates room, `/room/{code}` validates and renders scene
 
 ## Current Status
 
 ### In Progress
 
-See STABILIZATION.md for detailed task tracking.
-
-- Phase 0: MVP Deployment (Railway + rooms)
+- Phase 0: Deployment readiness (Docker, Railway)
 - Phase 3: Error handling & robustness
-- Phase 4: Code cleanup (remaining documentation tasks)
-- Material palette system
 
 ### Completed
 
+- Phase 0: Rooms system ✓
+  - Room creation/validation API
+  - Home page with room creation UI
+  - Path-based routing (`/room/{code}`)
+  - TypeScript conversion
+  - Yarn workspaces + Vite build system
 - Phase 1: Add up-axis metadata to binary payload ✓
 - Phase 2: Fix orientation bug (Z-up to Y-up conversion) ✓
 - Phase 4: Code Cleanup
   - Removed unused code (schema.py, engine/, unused imports)
   - Optimized BufferAttribute updates (pre-allocate, update in place)
-  - Refactored main.js (extracted functions, constants at top)
-  - Refactored server.js (consumer cleanup, extracted functions)
+  - Refactored scene.ts (extracted functions, constants at top)
+  - Refactored server.ts (consumer cleanup, extracted functions)
   - Formatted blender.py with ruff (3-space indentation)
 - Orbit camera controls (OrbitControls)
 
@@ -84,7 +87,16 @@ Metadata encoding:
 
 - Python: 3-space indentation (ruff formatter)
 - JavaScript: camelCase for variables, SCREAMING_SNAKE_CASE for constants
+- TypeScript: camelCase for variables, SCREAMING_SNAKE_CASE for constants
 - Constants at top of file
+
+### Build System
+
+- **Makefile** - Orchestrates dev/prod workflows
+  - `make all-dev` - Run Blender data + dev servers
+  - `make all-prod` - Production build and serve
+- **Yarn workspaces** - Monorepo with `frontend` and `backend` packages
+- **Vite** - Frontend bundler with config injection (`window.__BACKEND_URL__`)
 
 ### Bootstrap Pattern
 
