@@ -1,8 +1,58 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-export function showScene(_sceneCode: string) {
+
+class RoomConnection {
+   ws: WebSocket | null = null;
+   roomCode: string | null = null;
+   onMessageCallback: (event: MessageEvent) => void = (event: MessageEvent) => { };
+
+   connect(roomCode: string) {
+      if (this.ws) this.ws.close();
+      this.roomCode = roomCode;
+
+      // Set up the consumer client
+      const hostname = (window.__BACKEND_URL__ as string).includes("{{") ? `ws://${window.location.hostname}:3000` : window.__BACKEND_URL__?.trim();
+      console.log(hostname);
+      const WS_URI = `${hostname}/?type=auth&role=consumer&roomCode=${this.roomCode}`;
+      this.ws = new WebSocket(WS_URI);
+      this.ws.binaryType = "arraybuffer";  // Expecting an array buffer from the server
+
+      // Add message handler
+      this.ws.addEventListener("message", this.onMessageCallback);
+
+   }
+
+   disconnect() {
+      if (this.ws) this.ws.close();
+      this.ws = null;
+      this.roomCode = null;
+   }
+
+   // Handler for receiving messages from the server
+   onMessage(callback: (event: MessageEvent) => void) {
+      this.onMessageCallback = callback;
+   }
+}
+
+
+const ROOM_CONNECTION = new RoomConnection();
+ROOM_CONNECTION.onMessage((event: MessageEvent) => {
+   // Skip the data if we receive anything other than an array buffer
+   if (event.data instanceof ArrayBuffer === false) {
+      console.debug(`Skip ${event.data}`);
+      return;
+   }
+
+   updateGeometry(parseGeoData(event.data));
+});
+
+
+export function showScene(sceneCode: string) {
    // TODO Use the sceneCode to update websocket connection
+
+   ROOM_CONNECTION.connect(sceneCode);
+
    const app = document.getElementById("app");
    if (app) {
       app.replaceChildren(renderer.domElement);
@@ -28,7 +78,7 @@ window.addEventListener("dblclick", (_event) => {
          renderer.domElement.requestFullscreen();
       }
       else {
-         renderer.domElement.webkitRequestFullscreen();
+         renderer.domElement.webkitRequestFullscreen?.();
       }
    }
    else {
@@ -36,7 +86,7 @@ window.addEventListener("dblclick", (_event) => {
          document.exitFullscreen();
       }
       else {
-         document.webkitExitFullscreen();
+         document.webkitExitFullscreen?.();
       }
    }
 });
@@ -163,23 +213,6 @@ function updateGeometry({ positions, normals, uvs, rotation }) {
    geo.setRotationFromMatrix(rotation);
    wireGeo.setRotationFromMatrix(rotation);
 }
-
-
-// Set up the consumer client
-const hostname = window.__BACKEND_URL__?.trim() || window.location.hostname;
-const WS_URI = `wss://${hostname}?type=auth&role=consumer`;
-const websocket = new WebSocket(WS_URI);
-websocket.binaryType = "arraybuffer";  // Expecting an array buffer from the server
-
-websocket.addEventListener("message", (e) => {
-   // Skip the data if we receive anything other than an array buffer
-   if (e.data instanceof ArrayBuffer === false) {
-      console.debug(`Skip ${e.data}`);
-      return;
-   }
-
-   updateGeometry(parseGeoData(e.data));
-});
 
 
 function animate() {

@@ -7,7 +7,8 @@ function showHome() {
    const button = document.getElementById("button")
    if (button) {
       button.onclick = async function () {
-         let response = await fetch(`http://${url.hostname}:${url.port}/api/rooms`, { method: "POST" });
+         const userId = getOrCreateUUID();
+         let response = await fetch(`http://${url.hostname}:${url.port}/api/rooms?userID=${userId}`, { method: "POST" });
          const data = await response.json();
          const roomUrl = `http://${url.hostname}:${url.port}/room/${data.code}`;
          const roomResponse = document.getElementById("room-response")
@@ -35,8 +36,9 @@ document.addEventListener("DOMContentLoaded", async () => {
          url.pathname = "/";
          return;
       }
+      const userId = getOrCreateUUID();
       // Check to see if the room exists
-      const response = await fetch(`http://${url.hostname}:${url.port}/api/room?code=${roomCode}`, {
+      const response = await fetch(`http://${url.hostname}:${url.port}/api/room?userID=${userId}&code=${roomCode}`, {
          method: "GET",
          mode: "cors",
       });
@@ -65,3 +67,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
    }
 });
+
+
+// Create a unique identifier for the user and store in local storage
+function getOrCreateUUID(): string {
+   let userId = localStorage.getItem("userID");
+   if (!userId) {
+      userId = crypto.randomUUID();
+      localStorage.setItem("userID", userId);
+   }
+   return userId;
+}

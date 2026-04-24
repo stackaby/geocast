@@ -16,6 +16,8 @@ from websockets.asyncio.client import ClientConnection, connect
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
+HOST = "ws://localhost:3000"
+
 ID_t = bpy.types.ID
 Object_t = bpy.types.Object
 Mesh_t = bpy.types.Mesh
@@ -207,17 +209,15 @@ def serialize_object():
    return b""
 
 
-async def client_connect(host: str = ""):
-   return await connect(f"wss://{host or 'localhost:8080'}", additional_headers={"type": "auth", "role": "producer"})
+async def client_connect(room_code: str = ""):
+   return await connect(HOST, additional_headers={"type": "auth", "role": "producer", "roomCode": room_code})
 
 
 async def client_send(
    websocket: ClientConnection, blob: bytes, expect_response: bool = False
 ) -> tuple[int, bytes | None]:
-   logging.debug("Before send")
    try:
       await websocket.send(blob)
-      logging.debug("Send")
    except websockets.ConnectionClosed:
       # Try to recover
       return 1, None
@@ -255,13 +255,13 @@ class ClientConnectionHandler:
    def ws(self) -> ClientConnection | None:
       return self._client_connection
 
-   def start(self, host: str = ""):
-      if host != self._server_host:
-         self.close()
+   def start(self, room_code: str = ""):
+      # if host != self._server_host:
+      #   self.close()
 
       if not self._client_connection or self._client_connection.state == State.CLOSED:
          self._loop = asyncio.new_event_loop()
-         self._client_connection = self._loop.run_until_complete(client_connect(host or self._server_host))
+         self._client_connection = self._loop.run_until_complete(client_connect(room_code))
 
       self._active = True
 
@@ -278,7 +278,6 @@ class ClientConnectionHandler:
          self._client_connection = None
 
    def __call__(self):
-      logging.debug("Calling")
       if self._client_connection and self._client_connection.state == State.CLOSED:
          return 0.0
 
@@ -288,13 +287,10 @@ class ClientConnectionHandler:
 
 
 def persistent_geometry_updater(handler: ClientConnectionHandler):
-   logging.debug("Test")
    if handler.is_active and handler.ws:
       blob = serialize_edit_mesh() if bpy.context.mode == "EDIT_MESH" else serialize_object()
-      logging.debug(blob)
       if blob:
          result = handler.loop.run_until_complete(client_send(handler.ws, blob))
-         logging.debug(result)
          # If the result shows a closed connection, attempt to open it up again
          if result[0] == 1:  # There was an error
             try:
@@ -309,9 +305,7 @@ def persistent_geometry_updater(handler: ClientConnectionHandler):
 HANDLER = ClientConnectionHandler(persistent_geometry_updater)
 
 # Add a string property to the Scene
-bpy.types.Scene.server_host = bpy.props.StringProperty(
-   name="Server", description="Enter server address", default="localhost:8080"
-)
+bpy.types.Scene.room_code = bpy.props.StringProperty(name="Room Code", description="Enter room code")
 
 
 class ConnectOperator(bpy.types.Operator):
@@ -319,9 +313,11 @@ class ConnectOperator(bpy.types.Operator):
    bl_label = "Connect"
 
    def execute(self, context):
-      # Get the value of the server host from the scene property
-      server_host = context.scene.server_host
-      HANDLER.start(server_host)
+      # For testing purposes, separate room code by forward slash
+
+      # Get the value of the room code from the scene property
+      room_code = context.scene.room_code
+      HANDLER.start(room_code)
       return {"FINISHED"}
 
 
@@ -355,7 +351,7 @@ class GeocastPanel(bpy.types.Panel):
       box = layout.box()
       box.alignment = "LEFT"
       box.label(text="Server Settings:")
-      box.prop(context.scene, "server_host")
+      box.prop(context.scene, "room_code")
       box.operator("geocast.connect")
       box.operator("geocast.disconnect")
 

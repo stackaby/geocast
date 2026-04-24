@@ -14,7 +14,7 @@
     "noUncheckedIndexedAccess": true
   },
   "include": [
-      //"./frontend/**/*",
+      "./frontend/**/*",
       "./backend/**/*"
    ]
 }
