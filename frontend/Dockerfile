@@ -6,7 +6,7 @@ WORKDIR /app
 # three.js, vite, ws, etc.
 ARG DEV
 ARG FRONTEND=${DEV:+.}
-ARG FRONTEND=${FRONTEND:-./dist}
+ARG FRONTEND=${FRONTEND:-../dist}
 COPY ./package.json ./package-lock.json ./vite.config.js ${FRONTEND}/index.html ./entrypoint.sh .
 COPY ${FRONTEND}/assets/ ./assets/
 
