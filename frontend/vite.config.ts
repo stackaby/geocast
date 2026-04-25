@@ -9,6 +9,7 @@ export default {
       }
    },
    build: {
-      outDir: "../dist"
+      outDir: "../dist",
+      assetsDir: "frontend"
    }
 }

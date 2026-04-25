@@ -1,13 +1,13 @@
 import { createServer, IncomingMessage } from 'http';
 import express from 'express';
 import WebSocket, { WebSocketServer } from 'ws';
-import path from 'path';
+import { dirname, join } from 'path';
 import url from 'url';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto'
 
 const __fileName = fileURLToPath(import.meta.url);
-const __dirName = path.dirname(__fileName);
+const __dirName = dirname(__fileName);
 
 
 const PORT = 3000;
@@ -68,6 +68,10 @@ app.use((req, _res, next) => {
    console.log('=== INCOMING ===', req.method, req.url);
    next();
 });
+
+// Always present. In dev, never hit (Vite handles routing).
+// // In prod, serves built files.
+app.use(express.static(join(__dirname, "public")));
 
 
 // Generate a random room number
@@ -201,7 +205,9 @@ function getClientType(request: IncomingMessage): string | undefined {
 }
 
 function getRoomCode(request: IncomingMessage): string | undefined {
-   return request.headers?.roomcode || url.parse(request.url as string, true).query?.roomCode as string | undefined;
+   const roomCode = request.headers?.roomcode || url.parse(request.url as string, true).query?.roomCode;
+   if (!roomCode) return undefined;
+   return Array.isArray(roomCode) ? roomCode[0] : roomCode;
 }
 
 

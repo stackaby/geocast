@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "outDir": "../dist/backend",
+    "rootDir": "./src",
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "moduleDetection": "force",
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["src/**/*"]
+}

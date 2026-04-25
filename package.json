@@ -1,7 +1,7 @@
 {
   "scripts": {
     "dev:": "concurrently 'yarn workspace frontend vite --host' 'yarn workspace backend tsx watch ./src/server.ts'",
-    "build:": "concurrently 'yarn workspace frontend vite build' 'yarn tsc'",
+    "build:": "concurrently 'yarn workspace frontend vite build' 'yarn workspace backend tsc'",
     "start:": "concurrently 'yarn workspace frontend vite preview --host' 'yarn node ./dist/backend/src/server.js'"
   },
   "type": "module",

@@ -829,6 +829,7 @@ __metadata:
     "@types/ws": "npm:^8.18.1"
     express: "npm:^5.2.1"
     tsx: "npm:^4.21.0"
+    typescript: "npm:^6.0.3"
     ws: "npm:^8.20.0"
   languageName: unknown
   linkType: soft

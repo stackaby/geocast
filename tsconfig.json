@@ -1,7 +1,7 @@
  {
   "compilerOptions": {
     "outDir": "./dist",
-    "composite": true,
+    //"composite": true,
     "lib": ["esnext", "dom", "dom.iterable"],
     "target": "esnext",
     "moduleResolution": "nodenext",
@@ -13,8 +13,9 @@
     "moduleDetection": "force",
     "noUncheckedIndexedAccess": true
   },
-  "include": [
-      "./frontend/**/*",
-      "./backend/**/*"
-   ]
+  "references": [
+       { "path": "./frontend" },
+       { "path": "./backend" }
+   ],
+  "files": []
 }
