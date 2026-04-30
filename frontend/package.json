@@ -2,6 +2,9 @@
   "name": "frontend",
   "packageManager": "yarn@4.13.0",
   "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
   "dependencies": {
     "three": "^0.183.2"
   },

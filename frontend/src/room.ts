@@ -25,11 +25,14 @@ document.addEventListener("DOMContentLoaded", async () => {
    const url = new URL(window.location.href);
    const app = document.getElementById("app");
 
+   console.log(url.pathname)
+
    if (url.pathname === "/")  // Load the create room button page
    {
       showHome();
    }
    else if (url.pathname.startsWith("/room/")) {
+      console.log("trying")
       const roomCode = url.pathname.split("/room/")[1];
       if (!roomCode) {
          showHome();
@@ -42,6 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
          method: "GET",
          mode: "cors",
       });
+      console.log("hmm");
       if (response.status === 200) {
          showScene(roomCode);
       }

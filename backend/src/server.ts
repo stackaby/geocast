@@ -71,7 +71,11 @@ app.use((req, _res, next) => {
 
 // Always present. In dev, never hit (Vite handles routing).
 // // In prod, serves built files.
-app.use(express.static(join(__dirname, "public")));
+app.use(express.static("/app/public"));
+
+app.get('*splat', (_req, res) => {
+   res.sendFile(join("/app/public", "index.html"));
+});
 
 
 // Generate a random room number
