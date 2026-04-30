@@ -73,14 +73,10 @@ app.use((req, _res, next) => {
 // // In prod, serves built files.
 app.use(express.static("/app/public"));
 
-app.get('*splat', (_req, res) => {
-   res.sendFile(join("/app/public", "index.html"));
-});
-
 
 // Generate a random room number
 function generateRoomCode() {
-   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456793";
    const bytes = crypto.randomBytes(ROOM_CODE_LEN);
    let code = [];
    for (let byte of bytes) {
@@ -88,7 +84,6 @@ function generateRoomCode() {
    }
    return code.join("");
 }
-
 
 
 app.post('/api/rooms', (req: IncomingMessage, res) => {
@@ -117,13 +112,20 @@ app.post('/api/rooms', (req: IncomingMessage, res) => {
 
 app.get('/api/room', (req, res) => {
    const roomCode = req.query?.code as string;
+   console.log(roomCode);
    if (roomCode !== undefined && roomCode !== "") {
+      console.log(ROOMS.size);
       if (ROOMS.has(roomCode) && ROOM_MAP.has(roomCode)) {
          return res.status(200).json({ exists: true });
       }
       return res.status(404).json({ exists: false });
    }
    res.status(400).json({ error: "Missing room code" });
+});
+
+
+app.get('*splat', (_req, res) => {
+   res.sendFile(join("/app/public", "index.html"));
 });
 
 
