@@ -209,8 +209,10 @@ def serialize_object():
    return b""
 
 
-async def client_connect(room_code: str = ""):
-   return await connect(HOST, additional_headers={"type": "auth", "role": "producer", "roomCode": room_code})
+async def client_connect(server_host: str = "", room_code: str = ""):
+   return await connect(
+      server_host or HOST, additional_headers={"type": "auth", "role": "producer", "roomCode": room_code}
+   )
 
 
 async def client_send(
@@ -255,13 +257,13 @@ class ClientConnectionHandler:
    def ws(self) -> ClientConnection | None:
       return self._client_connection
 
-   def start(self, room_code: str = ""):
-      # if host != self._server_host:
-      #   self.close()
+   def start(self, server_host: str = "", room_code: str = ""):
+      if server_host != self._server_host:
+         self.close()
 
       if not self._client_connection or self._client_connection.state == State.CLOSED:
          self._loop = asyncio.new_event_loop()
-         self._client_connection = self._loop.run_until_complete(client_connect(room_code))
+         self._client_connection = self._loop.run_until_complete(client_connect(server_host, room_code))
 
       self._active = True
 
@@ -305,6 +307,9 @@ def persistent_geometry_updater(handler: ClientConnectionHandler):
 HANDLER = ClientConnectionHandler(persistent_geometry_updater)
 
 # Add a string property to the Scene
+bpy.types.Scene.server_host = bpy.props.StringProperty(
+   name="Server Host", description="Enter server host path", default=HOST
+)
 bpy.types.Scene.room_code = bpy.props.StringProperty(name="Room Code", description="Enter room code")
 
 
@@ -316,8 +321,9 @@ class ConnectOperator(bpy.types.Operator):
       # For testing purposes, separate room code by forward slash
 
       # Get the value of the room code from the scene property
+      server_host = context.scene.server_host
       room_code = context.scene.room_code
-      HANDLER.start(room_code)
+      HANDLER.start(server_host, room_code)
       return {"FINISHED"}
 
 
@@ -351,6 +357,7 @@ class GeocastPanel(bpy.types.Panel):
       box = layout.box()
       box.alignment = "LEFT"
       box.label(text="Server Settings:")
+      box.prop(context.scene, "server_host")
       box.prop(context.scene, "room_code")
       box.operator("geocast.connect")
       box.operator("geocast.disconnect")
