@@ -1,3 +1,6 @@
+# Mac
+.DS_Store
+
 # Node
 node_modules/
 
@@ -35,7 +38,8 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
+# Added wheels dir for blender add-on distribution
+# wheels/  
 share/python-wheels/
 *.egg-info/
 .installed.cfg

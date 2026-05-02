@@ -1,0 +1,158 @@
+{
+  "version": "v1",
+  "blocklist": [],
+  "data": [
+    {
+      "schema_version": "1.0.0",
+      "id": "geocast_client",
+      "name": "Geocast Client",
+      "tagline": "Stream geometry data to the web using three.js",
+      "version": "0.1.0",
+      "type": "add-on",
+      "maintainer": "Stackaby <imaginary.unmolded792@sombra.mailer.me>",
+      "license": [
+        "SPDX:MIT"
+      ],
+      "blender_version_min": "4.5.6",
+      "website": "https://github.com/stackaby/geocast",
+      "permissions": {
+        "network": "Sends geometry data via websockets to the server"
+      },
+      "tags": [
+        "Development",
+        "Animation",
+        "Game Engine",
+        "Import-Export",
+        "Lighting",
+        "Material",
+        "Modeling",
+        "Mesh",
+        "Pipeline",
+        "Render"
+      ],
+      "platforms": [
+        "macos-arm64"
+      ],
+      "python_versions": [
+        "3.11"
+      ],
+      "archive_url": "./geocast_client-0.1.0-macos_arm64.zip",
+      "archive_size": 15149337,
+      "archive_hash": "sha256:5f95e59438bd346dfa0ae4da8d238d0d4b9470eef08f0aae66f6cdbdc3afb94b"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "geocast_client",
+      "name": "Geocast Client",
+      "tagline": "Stream geometry data to the web using three.js",
+      "version": "0.1.0",
+      "type": "add-on",
+      "maintainer": "Stackaby <imaginary.unmolded792@sombra.mailer.me>",
+      "license": [
+        "SPDX:MIT"
+      ],
+      "blender_version_min": "4.5.6",
+      "website": "https://github.com/stackaby/geocast",
+      "permissions": {
+        "network": "Sends geometry data via websockets to the server"
+      },
+      "tags": [
+        "Development",
+        "Animation",
+        "Game Engine",
+        "Import-Export",
+        "Lighting",
+        "Material",
+        "Modeling",
+        "Mesh",
+        "Pipeline",
+        "Render"
+      ],
+      "platforms": [
+        "macos-x64"
+      ],
+      "python_versions": [
+        "3.11"
+      ],
+      "archive_url": "./geocast_client-0.1.0-macos_x64.zip",
+      "archive_size": 17154586,
+      "archive_hash": "sha256:0903b5f99fd16b9a181a2189dc8ec29d93b785a2d1cde5bcfec26d93ff435280"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "geocast_client",
+      "name": "Geocast Client",
+      "tagline": "Stream geometry data to the web using three.js",
+      "version": "0.1.0",
+      "type": "add-on",
+      "maintainer": "Stackaby <imaginary.unmolded792@sombra.mailer.me>",
+      "license": [
+        "SPDX:MIT"
+      ],
+      "blender_version_min": "4.5.6",
+      "website": "https://github.com/stackaby/geocast",
+      "permissions": {
+        "network": "Sends geometry data via websockets to the server"
+      },
+      "tags": [
+        "Development",
+        "Animation",
+        "Game Engine",
+        "Import-Export",
+        "Lighting",
+        "Material",
+        "Modeling",
+        "Mesh",
+        "Pipeline",
+        "Render"
+      ],
+      "platforms": [
+        "linux-x64"
+      ],
+      "python_versions": [
+        "3.11"
+      ],
+      "archive_url": "./geocast_client-0.1.0-linux_x64.zip",
+      "archive_size": 16999405,
+      "archive_hash": "sha256:b79b462260c7cabf79ae23fc140f300cdb38ab9b87e2aeda75bc114d288da55f"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "geocast_client",
+      "name": "Geocast Client",
+      "tagline": "Stream geometry data to the web using three.js",
+      "version": "0.1.0",
+      "type": "add-on",
+      "maintainer": "Stackaby <imaginary.unmolded792@sombra.mailer.me>",
+      "license": [
+        "SPDX:MIT"
+      ],
+      "blender_version_min": "4.5.6",
+      "website": "https://github.com/stackaby/geocast",
+      "permissions": {
+        "network": "Sends geometry data via websockets to the server"
+      },
+      "tags": [
+        "Development",
+        "Animation",
+        "Game Engine",
+        "Import-Export",
+        "Lighting",
+        "Material",
+        "Modeling",
+        "Mesh",
+        "Pipeline",
+        "Render"
+      ],
+      "platforms": [
+        "windows-x64"
+      ],
+      "python_versions": [
+        "3.11"
+      ],
+      "archive_url": "./geocast_client-0.1.0-windows_x64.zip",
+      "archive_size": 25400163,
+      "archive_hash": "sha256:d95062114c490efb076e344858f725da9a26e15da0dfc089dbc2fca9d0e35576"
+    }
+  ]
+}

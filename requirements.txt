@@ -1,0 +1,2 @@
+numpy==2.4.2 ; python_full_version == "3.11.11"
+websockets==16.0 ; python_full_version == "3.11.11"
