@@ -391,6 +391,8 @@ def draw_item(self, context):
 
 
 def register():
+   bpy.app.timers.register(HANDLER, persistent=True)
+
    bpy.utils.register_class(ConnectOperator)
    bpy.utils.register_class(DisconnectOperator)
    bpy.utils.register_class(GeocastPanel)
@@ -407,7 +409,6 @@ def unregister():
 
 
 def main():
-   bpy.app.timers.register(HANDLER, persistent=True)
    register()
 
 

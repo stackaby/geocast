@@ -37,8 +37,8 @@
         "3.11"
       ],
       "archive_url": "./geocast_client-0.1.0-macos_arm64.zip",
-      "archive_size": 15149337,
-      "archive_hash": "sha256:5f95e59438bd346dfa0ae4da8d238d0d4b9470eef08f0aae66f6cdbdc3afb94b"
+      "archive_size": 15149396,
+      "archive_hash": "sha256:e86e3391ff8eb38e588b69d1344adafc39f956512f0bfbd4e4a6687ba45e56a2"
     },
     {
       "schema_version": "1.0.0",
@@ -75,8 +75,8 @@
         "3.11"
       ],
       "archive_url": "./geocast_client-0.1.0-macos_x64.zip",
-      "archive_size": 17154586,
-      "archive_hash": "sha256:0903b5f99fd16b9a181a2189dc8ec29d93b785a2d1cde5bcfec26d93ff435280"
+      "archive_size": 17154645,
+      "archive_hash": "sha256:0fe457fbb2991e6969046dda0784de741abeb00efbe26b0904326d6ac0d5f506"
     },
     {
       "schema_version": "1.0.0",
@@ -113,8 +113,8 @@
         "3.11"
       ],
       "archive_url": "./geocast_client-0.1.0-linux_x64.zip",
-      "archive_size": 16999405,
-      "archive_hash": "sha256:b79b462260c7cabf79ae23fc140f300cdb38ab9b87e2aeda75bc114d288da55f"
+      "archive_size": 16999464,
+      "archive_hash": "sha256:5f3a1e5cea7a686025aee836b9c0497c2c52ba46e23dc10c364eae435551c9a6"
     },
     {
       "schema_version": "1.0.0",
@@ -151,8 +151,8 @@
         "3.11"
       ],
       "archive_url": "./geocast_client-0.1.0-windows_x64.zip",
-      "archive_size": 25400163,
-      "archive_hash": "sha256:d95062114c490efb076e344858f725da9a26e15da0dfc089dbc2fca9d0e35576"
+      "archive_size": 25400222,
+      "archive_hash": "sha256:ea2a38699e8597e7dd6d40d9c67a47286dd0226156ac146ec208db1c748ec456"
     }
   ]
 }
