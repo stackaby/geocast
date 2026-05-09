@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { resolveHostname, resolveProtocol } from './utils.js';
 
 
 class RoomConnection {
@@ -12,7 +13,7 @@ class RoomConnection {
       this.roomCode = roomCode;
 
       // Set up the consumer client
-      const hostname = (window.__BACKEND_URL__ as string).includes("{{") ? `ws://${window.location.hostname}:3000` : window.__BACKEND_URL__?.trim();
+      const hostname = `${resolveProtocol(true)}://${resolveHostname()}`;
       console.log(hostname);
       const WS_URI = `${hostname}/?type=auth&role=consumer&roomCode=${this.roomCode}`;
       this.ws = new WebSocket(WS_URI);

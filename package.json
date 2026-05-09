@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "dev:": "concurrently 'yarn workspace frontend vite --host' 'yarn workspace backend tsx watch ./src/server.ts'",
+    "dev:": "concurrently 'yarn workspace frontend vite --host' 'yarn workspace backend tsx watch --env-file=.env ./src/server.ts'",
     "build:": "concurrently 'yarn workspace frontend vite build' 'yarn workspace backend tsc'",
-    "start:": "concurrently 'yarn workspace frontend vite preview --host' 'yarn node ./dist/backend/src/server.js'"
+    "start:": "concurrently 'yarn workspace frontend vite preview --host' 'yarn node --env-file=./.env ./dist/backend/src/server.js'"
   },
   "type": "module",
   "packageManager": "yarn@4.13.0",

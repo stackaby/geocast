@@ -17,6 +17,9 @@ data:
 
 # make dev will just run the dev code without the vite build step
 dev:
+	# Copy env file into frontend/backend
+	cp .env ./frontend/.env
+	cp .env ./backend/.env
 	yarn dev:
 
 prod:
@@ -25,6 +28,8 @@ prod:
 	yarn start:
 
 build:
+	cp .env ./frontend/.env
+	cp .env ./backend/.env
 	yarn build:
 
 .PHONY: clean

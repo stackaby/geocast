@@ -1,11 +1,11 @@
 import { showScene } from './scene.js';
+import { resolveHostname, resolveProtocol } from './utils.js';
 
 // For get room page
 // When I do this I need to query the server to create a number for me
 function showHome() {
    const url = new URL(window.location.href);
    const button = document.getElementById("button")
-   console.log(url.protocol);
    if (button) {
       button.onclick = async function () {
          const userId = getOrCreateUUID();
@@ -45,7 +45,6 @@ document.addEventListener("DOMContentLoaded", async () => {
          method: "GET",
          mode: "cors",
       });
-      console.log("hmm");
       if (response.status === 200) {
          showScene(roomCode);
       }

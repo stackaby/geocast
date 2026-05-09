@@ -10,14 +10,14 @@ const __fileName = fileURLToPath(import.meta.url);
 const __dirName = dirname(__fileName);
 
 
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT ?? "3000", 10);
 const ROOM_CODE_LEN = 6
 const PRODUCER_TYPE = "PRODUCER";
 const CONSUMER_TYPE = "CONSUMER";
 const PRODUCER_MAP_KEY = "producer";
 const CONSUMERS_MAP_KEY = "consumers";
-const MAX_ROOMS_ON_SERVER = 1000;
-const MAX_OCCUPANCY = 5;
+const MAX_ROOMS_ON_SERVER = parseInt(process.env.MAX_ROOMS_ON_SERVER ?? "500", 10);
+const MAX_ROOM_OCCUPANCY = parseInt(process.env.MAX_ROOM_OCCUPANCY ?? "15", 10);
 
 type Room = {
    name?: string, // May not be required, could be a feature I introduce later
@@ -39,7 +39,7 @@ function createRoom(roomCode: string): Room {
       lastConnection: Date.now(),
       producer: null,
       consumers: [],
-      maxOccupancy: MAX_OCCUPANCY,
+      maxOccupancy: MAX_ROOM_OCCUPANCY,
       touch() {
          this.lastConnection = Date.now();
       },
@@ -123,6 +123,9 @@ app.get('/api/room', (req, res) => {
    res.status(400).json({ error: "Missing room code" });
 });
 
+app.get('/health', (_req, res) => {
+   return res.json({ status: 'ok' });
+});
 
 app.get('*splat', (_req, res) => {
    res.sendFile(join("/app/public", "index.html"));
