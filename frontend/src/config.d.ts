@@ -1,7 +1,7 @@
 declare global {
    interface Window {
-      __BACKEND_URL__: string;
-      __PROTOCOL: string;
+      __BACKEND_SERVER_PATH__: string;
+      __PROTOCOL__: string;
       __PORT__: string;
    }
 }

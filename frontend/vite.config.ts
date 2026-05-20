@@ -2,10 +2,10 @@ import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
 
-   const env = loadEnv(mode, process.cwd());
+   const env = loadEnv(mode, process.cwd(), '');
    const protocol = env.PROTOCOL || "http";
    const port = Number(env.PORT) || 3000;
-   const backend_path = `${env.BACKEND_PATH || "localhost"}:${port}`;
+   const backend_path = `${env.BACKEND_SERVER_PATH || "localhost"}:${port}`;
 
    return {
       // config options

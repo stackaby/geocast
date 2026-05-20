@@ -14,7 +14,6 @@ class RoomConnection {
 
       // Set up the consumer client
       const hostname = `${resolveProtocol(true)}://${resolveHostname()}`;
-      console.log(hostname);
       const WS_URI = `${hostname}/?type=auth&role=consumer&roomCode=${this.roomCode}`;
       this.ws = new WebSocket(WS_URI);
       this.ws.binaryType = "arraybuffer";  // Expecting an array buffer from the server

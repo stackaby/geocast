@@ -11,6 +11,9 @@ function showHome() {
          const userId = getOrCreateUUID();
          const host = url.port === "" ? url.hostname : `${url.hostname}:${url.port}`;
          let response = await fetch(`${url.protocol}//${host}/api/rooms?userID=${userId}`, { method: "POST" });
+         if (!response.ok) {
+            throw new Error(`Failed to create roon: ${response.status}`);
+         }
          const data = await response.json();
          const roomUrl = `${url.protocol}//${host}/room/${data.code}`;
          const roomResponse = document.getElementById("room-response")
